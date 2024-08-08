@@ -2,10 +2,8 @@ package user.api.usuario.usuario.model;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Set;
+import java.util.Collections;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,7 +48,7 @@ public class Usuario implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "roles")
-    private Set<Role> roles;
+    private Role role;
 
     @Column(name = "imagem")
     private String imagem;
@@ -60,9 +58,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
-                .collect(Collectors.toSet());
+        return Collections.singleton(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
