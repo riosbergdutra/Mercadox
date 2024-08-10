@@ -1,7 +1,6 @@
 package auth.api.auth.service;
 
 import java.time.Instant;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,7 @@ public class JwtService {
                 .subject(user.idUsuario())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiryDuration))
-                .claim("scope", String.join(" ", user.roles().stream().map(Enum::name).collect(Collectors.toList())))
+                .claim("role", user.role())
                 .claim("userId", user.idUsuario())
                 .build();
     
