@@ -1,7 +1,6 @@
 package auth.api.auth.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +24,6 @@ public class TokenController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         UsuarioDto usuarioDto = jwtService.validateUserByCredentials(loginRequest.email(), loginRequest.senha());
-        
-        if (usuarioDto == null) {
-            throw new BadCredentialsException("User does not exist!");
-        }
-
-        if (!usuarioDto.senha().equals(loginRequest.senha())) {
-            throw new BadCredentialsException("User or password is invalid!");
-        }
 
         var jwt = jwtService.generateToken(usuarioDto);
 
