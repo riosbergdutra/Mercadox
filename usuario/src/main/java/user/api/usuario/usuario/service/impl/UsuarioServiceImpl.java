@@ -2,7 +2,6 @@ package user.api.usuario.usuario.service.impl;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
+import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Usuario;
 import user.api.usuario.usuario.repository.UsuarioRepository;
@@ -56,32 +56,28 @@ public class UsuarioServiceImpl implements UsuarioService {
                 throw new RuntimeException("Erro ao fazer upload da imagem", e);
             }
         }
-        
+
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
 
         String queueUrl = "http://localhost:4566/000000000000/usuarios";
-        String messageBody = "idUsuario: " + usuarioCriado.getIdUsuario() + "\n" +
-                "email: " + usuarioCriado.getEmail() + "\n" +
-                "senha: " + usuarioCriado.getSenha();
+        String messageBody = String.format("idUsuario: %s\nemail: %s\nsenha: %s",
+                usuarioCriado.getIdUsuario(), usuarioCriado.getEmail(), usuarioCriado.getSenha());
 
         sqsTemplate.send(queueUrl, messageBody);
 
         return new UsuarioResponseDto(novoUsuario.getNome(), novoUsuario.getEmail(), novoUsuario.getImagem());
     }
 
-    public UsuarioIdResponseDto getUsuarioById(UUID id) {
-        Optional<Usuario> optionalUsuario = usuarioRepository.findById(id);
-        if (optionalUsuario.isPresent()) {
-            Usuario usuario = optionalUsuario.get();
-            return new UsuarioIdResponseDto(
-                    usuario.getNome(),
-                    usuario.getEmail(),
-                    usuario.getSenha(),
-                    usuario.getImagem(),
-                    usuario.getDataConta());
-        } else {
-            throw new UsuarioNotFoundException("Usuário não encontrado com o id: " + id);
-        }
+    public UsuarioIdResponseDto getUsuarioById(UUID id, UUID userId) {
+        return usuarioRepository.findById(id)
+                .filter(usuario -> id.equals(userId))
+                .map(usuario -> new UsuarioIdResponseDto(
+                        usuario.getNome(),
+                        usuario.getEmail(),
+                        usuario.getSenha(),
+                        usuario.getImagem(),
+                        usuario.getDataConta()))
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
     }
 
     public Usuario getUsuarioByEmail(String email, String senha) {
@@ -93,4 +89,21 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
     }
 
+    
+
+    public String mudarSenha(UUID id, UUID userId, MudarSenhaRequest mudarSenhaRequest) {
+        usuarioRepository.findById(id)
+                .filter(u -> id.equals(userId))
+                .map(u -> {
+                    if (!passwordEncoder.matches(mudarSenhaRequest.SenhaAntiga(), u.getSenha())) {
+                        throw new InvalidCredentialsException("Senha antiga incorreta");
+                    }
+                    u.setSenha(passwordEncoder.encode(mudarSenhaRequest.SenhaNova()));
+                    return usuarioRepository.save(u);
+                })
+                .orElseThrow(
+                        () -> new UsuarioNotFoundException("Usuário não encontrado"));
+
+        return "Senha alterada com sucesso";
+    }
 }
