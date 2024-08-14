@@ -31,9 +31,10 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.GET,"/actuator/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/usuarios/criar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasAnyRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "usuarios/email").permitAll()
+                .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
+                .requestMatchers(HttpMethod.POST, "usuario/email").permitAll()
+                .requestMatchers(HttpMethod.PUT, "usuario/senha/{id}").authenticated()
                 .anyRequest().authenticated())
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults()) // Adiciona suporte ao CORS
@@ -47,14 +48,14 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
-
+    
     @Bean
     public WebMvcConfigurer webMvcConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:8080", "http://localhost:8081" ) 
+                .allowedOrigins("http://localhost:8000", "http://localhost:8081", "http://localhost:8082")
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
                     .allowCredentials(true);
