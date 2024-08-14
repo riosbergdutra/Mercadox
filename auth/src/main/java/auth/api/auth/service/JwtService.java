@@ -48,7 +48,7 @@ public class JwtService {
     }
 
     public UsuarioDto validateUserByCredentials(String email, String senha) {
-        String url = String.format("%s/usuarios/email", userServiceUrl);
+        String url = String.format("%s/usuario/email", userServiceUrl);
         LoginRequest loginRequest = new LoginRequest(email, senha);
         System.out.println("Sending request to user service: " + url);
         try {
