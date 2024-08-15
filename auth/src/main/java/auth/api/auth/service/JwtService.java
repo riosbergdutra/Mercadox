@@ -8,10 +8,12 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import auth.api.auth.dto.LoginRequest;
 import auth.api.auth.dto.UsuarioDto;
 
 @Service
@@ -47,27 +49,40 @@ public class JwtService {
         return expiryDuration;
     }
 
-    public UsuarioDto validateUserByCredentials(String email, String senha) {
-        String url = String.format("%s/usuario/email", userServiceUrl);
-        LoginRequest loginRequest = new LoginRequest(email, senha);
-        System.out.println("Sending request to user service: " + url);
-        try {
-            ResponseEntity<UsuarioDto> response = restTemplate.postForEntity(url, loginRequest, UsuarioDto.class);
-            System.out.println("Response status: " + response.getStatusCode());
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                System.out.println("User found: " + response.getBody());
-                return response.getBody();
-            } else {
-                System.out.println("Failed to validate user, response status: " + response.getStatusCode());
-                return null;
-            }
-        } catch (HttpClientErrorException e) {
-            // Log the error or handle it as needed
-            System.out.println("HTTP Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
+    
+public UsuarioDto validateUserByCredentials(String email, String senha) {
+    String url = String.format("%s/usuario/email/", userServiceUrl);
+    
+    // Cria parâmetros de consulta
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    params.add("email", email);
+    params.add("senha", senha);
+
+    // Constrói a URL com os parâmetros de consulta
+    String uri = UriComponentsBuilder.fromHttpUrl(url)
+                                 .queryParams(params)
+                                 .toUriString();
+    
+    System.out.println("Sending request to user service: " + uri);
+    
+    try {
+        // Faz a requisição GET com parâmetros de consulta
+        ResponseEntity<UsuarioDto> response = restTemplate.getForEntity(uri, UsuarioDto.class);
+        System.out.println("Response status: " + response.getStatusCode());
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            System.out.println("User found: " + response.getBody());
+            return response.getBody();
+        } else {
+            System.out.println("Failed to validate user, response status: " + response.getStatusCode());
             return null;
         }
+    } catch (HttpClientErrorException e) {
+        // Log the error or handle it as needed
+        System.out.println("HTTP Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+        return null;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
     }
+}
 }
