@@ -2,11 +2,13 @@ package user.api.usuario.usuario.service.impl;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
@@ -36,8 +38,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private SqsTemplate sqsTemplate;
 
-    public UsuarioResponseDto saveUsuario(UsuarioRequestDto usuarioDto) {
-
+    @Override
+    public UsuarioResponseDto saveUsuario(@ModelAttribute UsuarioRequestDto usuarioDto) {
         Usuario novoUsuario = new Usuario();
         novoUsuario.setIdUsuario(UUID.randomUUID());
         novoUsuario.setNome(usuarioDto.nome());
@@ -46,28 +48,42 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoUsuario.setRole(usuarioDto.role());
         novoUsuario.setDataConta(LocalDate.now());
 
-        if (usuarioDto.role() == Role.VENDEDOR && usuarioDto.imagem() != null && !usuarioDto.imagem().isEmpty()) {
-            String userId = novoUsuario.getIdUsuario().toString();
-            String imagemKey = userId + "/" + UUID.randomUUID() + ".jpg";
-            try {
-                String imagemUrl = s3Service.uploadImagemS3(imagemKey, usuarioDto.imagem()); // Passando MultipartFile
-                novoUsuario.setImagem(imagemUrl);
-            } catch (IOException e) {
-                throw new RuntimeException("Erro ao fazer upload da imagem", e);
-            }
+        // Manipulação de imagem apenas se o usuário for VENDEDOR
+        if (usuarioDto.role() == Role.VENDEDOR) {
+            Optional.ofNullable(usuarioDto.imagem())
+                    .filter(imagem -> !imagem.isEmpty())
+                    .ifPresent(imagem -> {
+                        String userId = novoUsuario.getIdUsuario().toString();
+                        String imagemKey = userId + "/" + UUID.randomUUID() + ".jpg";
+                        try {
+                            String imagemUrl = s3Service.uploadImagemS3(imagemKey, imagem);
+                            novoUsuario.setImagem(imagemUrl);
+                        } catch (IOException e) {
+                            throw new RuntimeException("error.upload", e);
+                        }
+                    });
         }
 
+        // Salva o novo usuário
         Usuario usuarioCriado = usuarioRepository.save(novoUsuario);
 
-        String queueUrl = "http://localhost:4566/000000000000/usuarios";
-        String messageBody = String.format("idUsuario: %s\nemail: %s\nsenha: %s",
-                usuarioCriado.getIdUsuario(), usuarioCriado.getEmail(), usuarioCriado.getSenha());
+        // Verifica se o usuário foi salvo com sucesso antes de enviar a mensagem
+        if (usuarioCriado != null) {
+            String queueUrl = "http://localhost:4566/000000000000/usuarios";
+            String messageBody = String.format("idUsuario: %s\nemail: %s\nsenha: %s",
+                    usuarioCriado.getIdUsuario(), usuarioCriado.getEmail(), usuarioCriado.getSenha());
 
-        sqsTemplate.send(queueUrl, messageBody);
+            // Envia a mensagem para a fila SQS
+            sqsTemplate.send(queueUrl, messageBody);
+        } else {
+            throw new RuntimeException("failed.save.user");
+        }
 
+        // Retorna a resposta com os dados do usuário criado
         return new UsuarioResponseDto(novoUsuario.getNome(), novoUsuario.getEmail(), novoUsuario.getImagem());
     }
 
+    @Override
     public UsuarioIdResponseDto getUsuarioById(UUID id, UUID userId) {
         return usuarioRepository.findById(id)
                 .filter(usuario -> id.equals(userId))
@@ -77,33 +93,29 @@ public class UsuarioServiceImpl implements UsuarioService {
                         usuario.getSenha(),
                         usuario.getImagem(),
                         usuario.getDataConta()))
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
     }
 
+    @Override
     public Usuario getUsuarioByEmail(String email, String senha) {
-        Usuario usuario = usuarioRepository.findByEmail(email);
-        if (usuario != null && passwordEncoder.matches(senha, usuario.getSenha())) {
-            return usuario;
-        } else {
-            throw new InvalidCredentialsException("Credenciais inválidas");
-        }
+        return Optional.ofNullable(usuarioRepository.findByEmail(email))
+                .filter(usuario -> passwordEncoder.matches(senha, usuario.getSenha()))
+                .orElseThrow(() -> new InvalidCredentialsException("invalid.credentials"));
     }
 
-    
-
+    @Override
     public String mudarSenha(UUID id, UUID userId, MudarSenhaRequest mudarSenhaRequest) {
-        usuarioRepository.findById(id)
+        return usuarioRepository.findById(id)
                 .filter(u -> id.equals(userId))
                 .map(u -> {
                     if (!passwordEncoder.matches(mudarSenhaRequest.SenhaAntiga(), u.getSenha())) {
                         throw new InvalidCredentialsException("Senha antiga incorreta");
                     }
                     u.setSenha(passwordEncoder.encode(mudarSenhaRequest.SenhaNova()));
-                    return usuarioRepository.save(u);
+                    usuarioRepository.save(u);
+                    return "password.success";
                 })
-                .orElseThrow(
-                        () -> new UsuarioNotFoundException("Usuário não encontrado"));
-
-        return "Senha alterada com sucesso";
+                .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
     }
+
 }
