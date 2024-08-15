@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,"/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
                 .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
-                .requestMatchers(HttpMethod.POST, "usuario/email").permitAll()
+                .requestMatchers(HttpMethod.GET, "usuario/email/").permitAll()
                 .requestMatchers(HttpMethod.PUT, "usuario/senha/{id}").authenticated()
                 .anyRequest().authenticated())
             .csrf(csrf -> csrf.disable())
