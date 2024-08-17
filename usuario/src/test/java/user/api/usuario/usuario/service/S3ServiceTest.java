@@ -1,53 +1,82 @@
 package user.api.usuario.usuario.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
-import java.io.InputStream;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class S3ServiceTest {
 
     @Mock
     private S3Client s3Client;
 
-    @Mock
-    private MultipartFile multipartFile;
-
     @InjectMocks
     private S3Service s3Service;
 
-    @BeforeEach
-    public void setUp() {
+    public S3ServiceTest() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testUploadImage() throws Exception {
-        String key = "test-key";
-        long fileSize = 1024L; // Tamanho do arquivo simulado
+    void uploadImagemS3_ShouldUploadImageAndReturnUrl() throws IOException {
+        // Arrange
+        String key = "path/to/image.jpg";
+        MultipartFile imagem = new MockMultipartFile("file", "image.jpg", "image/jpeg", "image content".getBytes());
 
-        // Simular comportamento do MultipartFile
-        when(multipartFile.getInputStream()).thenReturn(mock(InputStream.class));
-        when(multipartFile.getSize()).thenReturn(fileSize);
+        // Simula a resposta do S3Client
+        PutObjectResponse response = PutObjectResponse.builder().build();
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class))).thenReturn(response);
 
-        // Executar o método a ser testado
-        String returnedKey = s3Service.uploadImage(key, multipartFile);
+        // Act
+        String url = s3Service.uploadImagemS3(key, imagem);
 
-        // Verificar se o método putObject foi chamado corretamente
-        verify(s3Client, times(1)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+        // Assert
+        assertNotNull(url);
+        assertTrue(url.contains(key));
+        verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+    }
 
-        // Verificar se a chave retornada é a esperada
-        assertEquals(key, returnedKey);
+    @Test
+    void uploadImagemS3_ShouldThrowIOException_WhenFileConversionFails() throws IOException {
+        // Arrange
+        String key = "path/to/image.jpg";
+        MultipartFile imagem = new MockMultipartFile("file", "image.jpg", "image/jpeg", "image content".getBytes()) {
+            @Override
+            public byte[] getBytes() throws IOException {
+                throw new IOException("Simulated exception");
+            }
+        };
+
+        // Act & Assert
+        IOException thrown = assertThrows(IOException.class, () -> s3Service.uploadImagemS3(key, imagem));
+        assertEquals("Simulated exception", thrown.getMessage());
+    }
+
+    @Test
+    void convertMultipartFileToFile_ShouldConvertSuccessfully() throws IOException {
+        // Arrange
+        MultipartFile file = new MockMultipartFile("file", "image.jpg", "image/jpeg", "image content".getBytes());
+
+        // Act
+        File convertedFile = s3Service.convertMultipartFileToFile(file);
+
+        // Assert
+        assertTrue(convertedFile.exists());
+        assertEquals("image.jpg", convertedFile.getName());
+        // Limpar o arquivo temporário após o teste
+        convertedFile.delete();
     }
 }
