@@ -20,4 +20,5 @@ public interface UsuarioService {
 
     // permite o usuario mudar a senha (precisa ser autenticado)
     public String mudarSenha(UUID id, UUID userId, MudarSenhaRequest mudarSenhaRequest);
+    public String deleteUsuario(UUID id, UUID userId);
 }
