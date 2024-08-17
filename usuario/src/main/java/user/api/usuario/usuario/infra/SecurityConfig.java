@@ -18,6 +18,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.security.interfaces.RSAPublicKey;
 
+/**
+ * Configuração de segurança da aplicação.
+ * 
+ * Esta classe configura a segurança da aplicação utilizando Spring Security, incluindo a configuração de autenticação com JWT,
+ * controle de acesso, suporte a CORS e criptografia de senhas.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -26,15 +32,23 @@ public class SecurityConfig {
     @Value("${jwt.public.key}")
     private RSAPublicKey publicKey;
 
+    /**
+     * Configura o filtro de segurança da aplicação.
+     * 
+     * @param http Configuração de segurança HTTP.
+     * @return Configuração do filtro de segurança.
+     * @throws Exception Se houver algum problema ao configurar a segurança.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.GET,"/actuator/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
                 .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
-                .requestMatchers(HttpMethod.GET, "usuario/email/").permitAll()
-                .requestMatchers(HttpMethod.PUT, "usuario/senha/{id}").authenticated()
+                .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
                 .anyRequest().authenticated())
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults()) // Adiciona suporte ao CORS
@@ -44,11 +58,21 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Configura o decodificador de JWT utilizando a chave pública fornecida.
+     * 
+     * @return Decodificador JWT.
+     */
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
     
+    /**
+     * Configura o suporte a CORS na aplicação.
+     * 
+     * @return Configuração do WebMvcConfigurer para CORS.
+     */
     @Bean
     public WebMvcConfigurer webMvcConfigurer() {
         return new WebMvcConfigurer() {
@@ -62,9 +86,14 @@ public class SecurityConfig {
             }
         };
     }
+
+    /**
+     * Configura o encoder de senha BCrypt.
+     * 
+     * @return Encoder de senha BCrypt.
+     */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
 }
