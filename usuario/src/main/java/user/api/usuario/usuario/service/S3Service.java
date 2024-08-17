@@ -11,6 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+/**
+ * Serviço para gerenciamento de arquivos no Amazon S3.
+ * 
+ * Este serviço fornece métodos para fazer upload de imagens para um bucket S3.
+ */
 @Service
 public class S3Service {
 
@@ -19,6 +24,14 @@ public class S3Service {
 
     private static final String BUCKET_NAME = "usuario";
 
+    /**
+     * Faz o upload de uma imagem para o bucket S3 especificado.
+     * 
+     * @param key Chave do objeto no S3, geralmente o caminho do arquivo.
+     * @param imagem Imagem a ser carregada, representada por um MultipartFile.
+     * @return URL pública da imagem no S3.
+     * @throws IOException Se ocorrer um erro ao converter o MultipartFile em um arquivo.
+     */
     public String uploadImagemS3(String key, MultipartFile imagem) throws IOException {
         File file = convertMultipartFileToFile(imagem);
 
@@ -34,7 +47,14 @@ public class S3Service {
         return String.format("http://localhost:4566/%s/%s", BUCKET_NAME, key);
     }
 
-    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
+    /**
+     * Converte um MultipartFile em um arquivo temporário.
+     * 
+     * @param file MultipartFile a ser convertido.
+     * @return Arquivo convertido.
+     * @throws IOException Se ocorrer um erro ao criar o arquivo.
+     */
+    File convertMultipartFileToFile(MultipartFile file) throws IOException {
         File convFile = new File(file.getOriginalFilename());
         try (FileOutputStream fos = new FileOutputStream(convFile)) {
             fos.write(file.getBytes());
