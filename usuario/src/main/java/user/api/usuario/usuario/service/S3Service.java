@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import user.api.usuario.usuario.exceptions.S3ImageDeletionException;
 
 /**
  * Serviço para gerenciamento de arquivos no Amazon S3.
@@ -27,18 +29,19 @@ public class S3Service {
     /**
      * Faz o upload de uma imagem para o bucket S3 especificado.
      * 
-     * @param key Chave do objeto no S3, geralmente o caminho do arquivo.
+     * @param key    Chave do objeto no S3, geralmente o caminho do arquivo.
      * @param imagem Imagem a ser carregada, representada por um MultipartFile.
      * @return URL pública da imagem no S3.
-     * @throws IOException Se ocorrer um erro ao converter o MultipartFile em um arquivo.
+     * @throws IOException Se ocorrer um erro ao converter o MultipartFile em um
+     *                     arquivo.
      */
     public String uploadImagemS3(String key, MultipartFile imagem) throws IOException {
         File file = convertMultipartFileToFile(imagem);
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-            .bucket(BUCKET_NAME)
-            .key(key)
-            .build();
+                .bucket(BUCKET_NAME)
+                .key(key)
+                .build();
 
         s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromFile(file));
         file.delete();
@@ -60,5 +63,24 @@ public class S3Service {
             fos.write(file.getBytes());
         }
         return convFile;
+    }
+
+    /**
+     * Exclui uma imagem do bucket S3.
+     * 
+     * @param imagemKey Chave da imagem no S3 que deve ser excluída.
+     * @throws S3ImageDeletionException Se ocorrer um erro ao tentar excluir a imagem.
+     */
+    public void deleteImagemS3(String imagemKey) {
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(BUCKET_NAME)
+                .key(imagemKey)
+                .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (Exception e) {
+            throw new S3ImageDeletionException("Falha ao excluir a imagem do S3", e);
+        }
     }
 }
