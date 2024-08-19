@@ -2,6 +2,7 @@ package user.api.usuario.usuario.service.impl;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,12 +16,15 @@ import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
 import user.api.usuario.usuario.enums.Role;
+import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
+import user.api.usuario.usuario.repository.EnderecoRepository;
 import user.api.usuario.usuario.repository.UsuarioRepository;
 import user.api.usuario.usuario.service.S3Service;
 import user.api.usuario.usuario.service.UsuarioService;
 import user.api.usuario.usuario.exceptions.UsuarioNotFoundException;
 import user.api.usuario.usuario.exceptions.InvalidCredentialsException;
+import user.api.usuario.usuario.exceptions.S3ImageDeletionException;
 
 /**
  * Implementação do serviço de usuário, responsável por gerenciar operações
@@ -41,6 +45,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private SqsTemplate sqsTemplate;
 
+    private EnderecoRepository enderecoRepository;
+
     /**
      * Salva um novo usuário no sistema.
      *
@@ -56,6 +62,20 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoUsuario.setSenha(passwordEncoder.encode(usuarioDto.senha()));
         novoUsuario.setRole(usuarioDto.role());
         novoUsuario.setDataConta(LocalDate.now());
+
+        // Configurar e salvar endereços
+        List<Endereco> enderecos = usuarioDto.enderecos().stream()
+                .map(dto -> {
+                    Endereco endereco = new Endereco();
+                    endereco.setRua(dto.rua());
+                    endereco.setNumero(dto.numero());
+                    endereco.setCidade(dto.cidade());
+                    endereco.setEstado(dto.estado());
+                    endereco.setCep(dto.cep());
+                    return endereco;
+                })
+                .toList();
+        novoUsuario.setEnderecos(enderecos);
 
         // Manipulação de imagem apenas se o usuário for VENDEDOR
         if (usuarioDto.role() == Role.VENDEDOR) {
@@ -73,7 +93,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                     });
         }
 
-        // Salva o novo usuário e obtém o usuário criado
+        // Salva o novo usuário com endereços
         usuarioRepository.save(novoUsuario);
 
         // Retorna a resposta com os dados do usuário criado
@@ -138,28 +158,47 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     /**
-     * Exclui um usuário do sistema.
+     * Exclui uma conta de usuário.
      *
      * @param id     ID do usuário a ser excluído.
      * @param userId ID do usuário autenticado.
-     * @return Mensagem de sucesso se o usuário for excluído com sucesso.
+     * @return Mensagem de sucesso se a conta for excluída com sucesso.
      */
     @Override
     public String deleteUsuario(UUID id, UUID userId) {
-        return usuarioRepository.findById(id)
-                .filter(usuario -> id.equals(userId))
-                .map(usuario -> {
-                    // Exclui o usuário do banco de dados
-                    usuarioRepository.delete(usuario);
-
-                    // Envia uma mensagem para a fila SQS
-                    String queueUrl = "http://localhost:4566/000000000000/usuario";
-                    String messageBody = "Usuário atualizado pelo ID: " + id;
-                    sqsTemplate.send(queueUrl, messageBody);
-
-                    return "user.deleted.success";
-                })
+        // Recupera o usuário a partir do ID e verifica se o ID coincide com o ID do
+        // usuário autenticado
+        Usuario usuario = usuarioRepository.findById(id)
+                .filter(u -> id.equals(userId))
                 .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
-    }
 
+        // Exclui a imagem do S3, se houver
+        if (usuario.getImagem() != null && !usuario.getImagem().isEmpty()) {
+            // Extrai a chave da imagem do URL
+            String imagemKey = usuario.getImagem().substring(usuario.getImagem().lastIndexOf("/") + 1);
+            try {
+                s3Service.deleteImagemS3(imagemKey);
+            } catch (S3ImageDeletionException e) {
+                // Tratar a falha na exclusão da imagem
+                throw new RuntimeException("Falha ao excluir a imagem do S3", e);
+            }
+        }
+
+        // Exclui os endereços associados ao usuário
+        if (usuario.getEnderecos() != null) {
+            for (Endereco endereco : usuario.getEnderecos()) {
+                enderecoRepository.delete(endereco);
+            }
+        }
+
+        // Exclui o usuário do banco de dados
+        usuarioRepository.delete(usuario);
+
+        // Envia uma mensagem para a fila SQS
+        String queueUrl = "http://localhost:4566/000000000000/usuario/deletar";
+        String messageBody = "IdUsuario: " + usuario.getIdUsuario();
+        sqsTemplate.send(queueUrl, messageBody);
+
+        return "user.deleted.success";
+    }
 }
