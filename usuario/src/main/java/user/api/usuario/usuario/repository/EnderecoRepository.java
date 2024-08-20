@@ -8,6 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import user.api.usuario.usuario.model.Endereco;
 
 public interface EnderecoRepository extends JpaRepository<Endereco, UUID> {
-    List<Endereco> findByUsuarioId(UUID idUsuario);
-
+    List<Endereco> findAllByUsuario_IdUsuario(UUID idUsuario);
 }
