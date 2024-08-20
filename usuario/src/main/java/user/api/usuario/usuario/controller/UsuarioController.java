@@ -19,10 +19,10 @@ import jakarta.validation.Valid;
 
 import org.springframework.security.core.Authentication;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
+import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
-import user.api.usuario.usuario.model.Usuario;
 import user.api.usuario.usuario.service.UsuarioService;
 
 /**
@@ -73,10 +73,14 @@ public class UsuarioController {
      * @return ResponseEntity com o objeto Usuario e status 200 (OK).
      */
     @GetMapping("/email/")
-    public ResponseEntity<Usuario> getUsuarioByEmail(@RequestParam String email, @RequestParam String senha) {
-        Usuario usuario = usuarioService.getUsuarioByEmail(email, senha);
-        return ResponseEntity.ok(usuario);
-    }
+public ResponseEntity<UsuarioEmailDto> getUsuarioByEmail(@RequestParam String email, @RequestParam String senha) {
+    UsuarioEmailDto usuarioEmailDto = usuarioService.getUsuarioByEmail(email, senha);
+    return ResponseEntity.ok(usuarioEmailDto);
+}
+
+    
+
+
 
     /**
      * Endpoint para alterar a senha do usuário.
