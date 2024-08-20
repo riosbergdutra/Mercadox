@@ -11,7 +11,7 @@ public interface EnderecoService {
 
     public Optional<EnderecoDto> getEnderecoById(UUID id, UUID userId);
 
-    public List<EnderecoDto> getAllEnderecos(UUID userId);
+    List<EnderecoDto> getAllEnderecosByUserId(UUID userId);
 
     public EnderecoDto updateEndereco(UUID id, EnderecoDto enderecoDto, UUID userId);
 
