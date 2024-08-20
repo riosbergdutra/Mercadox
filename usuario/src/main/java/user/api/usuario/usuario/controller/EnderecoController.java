@@ -28,7 +28,7 @@ public class EnderecoController {
     /**
      * Endpoint para criar um novo endereço para o usuário autenticado.
      * 
-     * @param enderecoDto DTO contendo os dados do endereço a ser criado.
+     * @param enderecoDto    DTO contendo os dados do endereço a ser criado.
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com o DTO do endereço criado e status 201 (CREATED).
      */
@@ -43,9 +43,10 @@ public class EnderecoController {
     }
 
     /**
-     * Endpoint para obter um endereço por ID, se ele pertencer ao usuário autenticado.
+     * Endpoint para obter um endereço por ID, se ele pertencer ao usuário
+     * autenticado.
      * 
-     * @param id ID do endereço a ser consultado.
+     * @param id             ID do endereço a ser consultado.
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com o DTO do endereço e status 200 (OK).
      */
@@ -66,18 +67,19 @@ public class EnderecoController {
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com uma lista de DTOs de endereços e status 200 (OK).
      */
-    @GetMapping("/todos")
-    public ResponseEntity<List<EnderecoDto>> getAllEnderecos(Authentication authentication) {
+    @GetMapping("/{userId}/enderecos")
+    public ResponseEntity<List<EnderecoDto>> getAllEnderecosByUserId(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
-        List<EnderecoDto> enderecos = enderecoService.getAllEnderecos(userId);
+        List<EnderecoDto> enderecos = enderecoService.getAllEnderecosByUserId(userId);
         return ResponseEntity.ok(enderecos);
     }
 
     /**
-     * Endpoint para atualizar um endereço existente associado ao usuário autenticado.
+     * Endpoint para atualizar um endereço existente associado ao usuário
+     * autenticado.
      * 
-     * @param id ID do endereço a ser atualizado.
-     * @param enderecoDto DTO com os dados atualizados do endereço.
+     * @param id             ID do endereço a ser atualizado.
+     * @param enderecoDto    DTO com os dados atualizados do endereço.
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com o DTO do endereço atualizado e status 200 (OK).
      */
@@ -95,7 +97,7 @@ public class EnderecoController {
     /**
      * Endpoint para excluir um endereço existente associado ao usuário autenticado.
      * 
-     * @param id ID do endereço a ser excluído.
+     * @param id             ID do endereço a ser excluído.
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com uma mensagem de sucesso e status 200 (OK).
      */
