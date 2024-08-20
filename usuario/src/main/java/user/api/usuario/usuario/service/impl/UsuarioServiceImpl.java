@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
+import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
+import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Endereco;
@@ -63,19 +65,17 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoUsuario.setRole(usuarioDto.role());
         novoUsuario.setDataConta(LocalDate.now());
 
-        // Configurar e salvar endereços
-        List<Endereco> enderecos = usuarioDto.enderecos().stream()
-                .map(dto -> {
-                    Endereco endereco = new Endereco();
-                    endereco.setRua(dto.rua());
-                    endereco.setNumero(dto.numero());
-                    endereco.setCidade(dto.cidade());
-                    endereco.setEstado(dto.estado());
-                    endereco.setCep(dto.cep());
-                    return endereco;
-                })
-                .toList();
-        novoUsuario.setEnderecos(enderecos);
+        // Configurar e salvar o endereço
+        Endereco endereco = new Endereco();
+        EnderecoDto dto = usuarioDto.endereco();
+        endereco.setRua(dto.rua());
+        endereco.setNumero(dto.numero());
+        endereco.setCidade(dto.cidade());
+        endereco.setEstado(dto.estado());
+        endereco.setCep(dto.cep());
+        endereco.setUsuario(novoUsuario); // Associa o endereço ao usuário
+
+        novoUsuario.setEnderecos(List.of(endereco)); // Coloque o endereço em uma lista
 
         // Manipulação de imagem apenas se o usuário for VENDEDOR
         if (usuarioDto.role() == Role.VENDEDOR) {
@@ -128,10 +128,13 @@ public class UsuarioServiceImpl implements UsuarioService {
      * @return Usuário correspondente às credenciais fornecidas.
      */
     @Override
-    public Usuario getUsuarioByEmail(String email, String senha) {
-        return Optional.ofNullable(usuarioRepository.findByEmail(email))
-                .filter(usuario -> passwordEncoder.matches(senha, usuario.getSenha()))
+    public UsuarioEmailDto getUsuarioByEmail(String email, String senha) {
+        Usuario usuario = Optional.ofNullable(usuarioRepository.findByEmail(email))
+                .filter(u -> passwordEncoder.matches(senha, u.getSenha()))
                 .orElseThrow(() -> new InvalidCredentialsException("invalid.credentials"));
+
+        // Mapear Usuario para UsuarioEmailDto
+        return new UsuarioEmailDto(usuario.getIdUsuario(),usuario.getEmail(), usuario.getSenha(), usuario.getRole());
     }
 
     /**
