@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
+import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
@@ -18,6 +19,7 @@ import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
+import user.api.usuario.usuario.repository.EnderecoRepository;
 import user.api.usuario.usuario.repository.UsuarioRepository;
 import user.api.usuario.usuario.service.S3Service;
 import user.api.usuario.usuario.exceptions.UsuarioNotFoundException;
@@ -33,6 +35,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Testes para o serviço UsuarioServiceImpl.
+ * 
+ * Os testes verificam a funcionalidade do serviço de usuário, incluindo criação, obtenção, atualização e exclusão de usuários.
+ */
 public class UsuarioServiceImplTest {
 
     @Mock
@@ -47,6 +54,9 @@ public class UsuarioServiceImplTest {
     @Mock
     private SqsTemplate sqsTemplate;
 
+    @Mock
+    private EnderecoRepository enderecoRepository;
+
     @InjectMocks
     private UsuarioServiceImpl usuarioService;
 
@@ -55,19 +65,16 @@ public class UsuarioServiceImplTest {
         MockitoAnnotations.openMocks(this);
     }
 
-   
+    /**
+     * Testa a criação e o salvamento de um usuário.
+     * Verifica se o usuário é salvo corretamente e se a URL da imagem é retornada como esperado.
+     */
     @Test
     void saveUsuario_ShouldSaveAndReturnUserResponseDto() throws IOException {
         // Arrange
         MultipartFile imagem = new MockMultipartFile("imagem", "imagem.jpg", "image/jpeg", "imagemConteudo".getBytes());
-
-        // Definindo lista de endereços
-        List<EnderecoDto> enderecosDto = List.of(
-                new EnderecoDto("Rua 1", "123", "Cidade A", "Estado A", "12345-678"),
-                new EnderecoDto("Rua 2", "456", "Cidade B", "Estado B", "23456-789")
-        );
-
-        UsuarioRequestDto usuarioDto = new UsuarioRequestDto("Nome", imagem, "email@example.com", "senha", Role.VENDEDOR, enderecosDto);
+        EnderecoDto enderecoDto = new EnderecoDto("Rua 1", "123", "Cidade A", "Estado A", "12345-678");
+        UsuarioRequestDto usuarioDto = new UsuarioRequestDto("Nome", imagem, "email@example.com", "senha", Role.VENDEDOR, enderecoDto);
 
         Usuario usuario = new Usuario();
         usuario.setIdUsuario(UUID.randomUUID());
@@ -76,6 +83,7 @@ public class UsuarioServiceImplTest {
         usuario.setSenha("senhaCodificada");
         usuario.setRole(Role.VENDEDOR);
         usuario.setDataConta(LocalDate.now());
+        usuario.setEnderecos(List.of(new Endereco())); // Configuração simplificada para o teste
 
         // Mockando a codificação da senha
         when(passwordEncoder.encode(usuarioDto.senha())).thenReturn("senhaCodificada");
@@ -95,22 +103,22 @@ public class UsuarioServiceImplTest {
         assertEquals("email@example.com", response.email());
         assertEquals("imagemUrl", response.imagem());
 
-        // Verificação se o usuário com os endereços foi salvo corretamente
+        // Verificação se o usuário com o endereço foi salvo corretamente
         verify(usuarioRepository).save(argThat(u -> {
             List<Endereco> enderecosSalvos = u.getEnderecos();
-            return enderecosSalvos != null && enderecosSalvos.size() == 2 &&
+            return enderecosSalvos != null && !enderecosSalvos.isEmpty() &&
                    enderecosSalvos.stream().anyMatch(e -> "Rua 1".equals(e.getRua()) &&
                                                            "123".equals(e.getNumero()) &&
                                                            "Cidade A".equals(e.getCidade()) &&
                                                            "Estado A".equals(e.getEstado()) &&
-                                                           "12345-678".equals(e.getCep())) &&
-                   enderecosSalvos.stream().anyMatch(e -> "Rua 2".equals(e.getRua()) &&
-                                                           "456".equals(e.getNumero()) &&
-                                                           "Cidade B".equals(e.getCidade()) &&
-                                                           "Estado B".equals(e.getEstado()) &&
-                                                           "23456-789".equals(e.getCep()));
+                                                           "12345-678".equals(e.getCep()));
         }));
     }
+
+    /**
+     * Testa a recuperação de um usuário pelo ID.
+     * Verifica se o usuário é retornado corretamente quando encontrado.
+     */
     @Test
     void getUsuarioById_ShouldReturnUsuarioIdResponseDto() {
         // Arrange
@@ -135,26 +143,38 @@ public class UsuarioServiceImplTest {
         assertEquals("email@example.com", response.email());
     }
 
+    /**
+     * Testa a recuperação de um usuário pelo e-mail e senha.
+     * Verifica se os detalhes do usuário são retornados corretamente quando as credenciais são válidas.
+     */
     @Test
-    void getUsuarioByEmail_ShouldReturnUsuario() {
+    void getUsuarioByEmail_ShouldReturnUsuarioEmailDto() {
         // Arrange
         String email = "email@example.com";
         String senha = "senha";
         Usuario usuario = new Usuario();
         usuario.setEmail(email);
         usuario.setSenha("senhaCodificada");
+        usuario.setIdUsuario(UUID.randomUUID());
+        usuario.setRole(Role.USUARIO);
 
         when(usuarioRepository.findByEmail(email)).thenReturn(usuario);
         when(passwordEncoder.matches(senha, "senhaCodificada")).thenReturn(true);
 
         // Act
-        Usuario result = usuarioService.getUsuarioByEmail(email, senha);
+        UsuarioEmailDto response = usuarioService.getUsuarioByEmail(email, senha);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(email, result.getEmail());
+        assertNotNull(response);
+        assertEquals(usuario.getIdUsuario(), response.idUsuario());
+        assertEquals(email, response.email());
+        assertEquals(usuario.getRole(), response.role());
     }
 
+    /**
+     * Testa a mudança de senha de um usuário.
+     * Verifica se a senha é atualizada corretamente quando as credenciais são válidas.
+     */
     @Test
     void mudarSenha_ShouldChangePasswordSuccessfully() {
         // Arrange
@@ -175,9 +195,13 @@ public class UsuarioServiceImplTest {
 
         // Assert
         assertEquals("password.success", result);
-        verify(usuarioRepository).save(usuario);
+        verify(usuarioRepository).save(argThat(u -> "senhaNovaCodificada".equals(u.getSenha())));
     }
 
+    /**
+     * Testa a exclusão de um usuário.
+     * Verifica se o usuário é excluído corretamente e se as ações associadas são executadas (e.g., exclusão da imagem, envio de mensagem para SQS).
+     */
     @Test
     void deleteUsuario_ShouldDeleteAndSendMessage() {
         // Arrange
@@ -185,8 +209,14 @@ public class UsuarioServiceImplTest {
         UUID userId = id;
         Usuario usuario = new Usuario();
         usuario.setIdUsuario(id);
+        usuario.setImagem("imagemUrl");
+        usuario.setEnderecos(List.of(new Endereco()));
 
         when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuario));
+        doNothing().when(enderecoRepository).delete(any(Endereco.class));
+
+        // Mockando a exclusão da imagem
+        doNothing().when(s3Service).deleteImagemS3(anyString());
 
         // Act
         String result = usuarioService.deleteUsuario(id, userId);
@@ -195,8 +225,14 @@ public class UsuarioServiceImplTest {
         assertEquals("user.deleted.success", result);
         verify(usuarioRepository).delete(usuario);
         verify(sqsTemplate).send(anyString(), anyString());
+        verify(s3Service).deleteImagemS3("imagemUrl".substring("imagemUrl".lastIndexOf("/") + 1));
+        verify(enderecoRepository, times(1)).delete(any(Endereco.class));
     }
 
+    /**
+     * Testa a recuperação de um usuário pelo ID quando o usuário não é encontrado.
+     * Verifica se a exceção UsuarioNotFoundException é lançada corretamente.
+     */
     @Test
     void getUsuarioById_ShouldThrowUsuarioNotFoundException() {
         // Arrange
@@ -212,6 +248,10 @@ public class UsuarioServiceImplTest {
         assertEquals("user.not.found", exception.getMessage());
     }
 
+    /**
+     * Testa a recuperação de um usuário pelo e-mail quando o e-mail não é encontrado.
+     * Verifica se a exceção InvalidCredentialsException é lançada corretamente.
+     */
     @Test
     void getUsuarioByEmail_ShouldThrowInvalidCredentialsException() {
         // Arrange
@@ -226,6 +266,10 @@ public class UsuarioServiceImplTest {
         assertEquals("invalid.credentials", exception.getMessage());
     }
 
+    /**
+     * Testa a mudança de senha quando o usuário não é encontrado.
+     * Verifica se a exceção UsuarioNotFoundException é lançada corretamente.
+     */
     @Test
     void mudarSenha_ShouldThrowUsuarioNotFoundException() {
         // Arrange
