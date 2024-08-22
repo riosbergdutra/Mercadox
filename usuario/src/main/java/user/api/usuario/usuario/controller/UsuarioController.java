@@ -46,9 +46,9 @@ public class UsuarioController {
     @PostMapping("/criar")
     public ResponseEntity<UsuarioResponseDto> criarUsuario(
             @Valid @ModelAttribute UsuarioRequestDto usuarioDto) {
-
         UsuarioResponseDto resposta = usuarioService.saveUsuario(usuarioDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+
     }
 
     /**
@@ -73,14 +73,10 @@ public class UsuarioController {
      * @return ResponseEntity com o objeto Usuario e status 200 (OK).
      */
     @GetMapping("/email/")
-public ResponseEntity<UsuarioEmailDto> getUsuarioByEmail(@RequestParam String email, @RequestParam String senha) {
-    UsuarioEmailDto usuarioEmailDto = usuarioService.getUsuarioByEmail(email, senha);
-    return ResponseEntity.ok(usuarioEmailDto);
-}
-
-    
-
-
+    public ResponseEntity<UsuarioEmailDto> getUsuarioByEmail(@RequestParam String email, @RequestParam String senha) {
+        UsuarioEmailDto usuarioEmailDto = usuarioService.getUsuarioByEmail(email, senha);
+        return ResponseEntity.ok(usuarioEmailDto);
+    }
 
     /**
      * Endpoint para alterar a senha do usuário.
