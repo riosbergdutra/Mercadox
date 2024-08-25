@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "api-usuario"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+        - "api-usuario:8082"
+        labels:
+          application: "api-usuario"
+
+  - job_name: "api-auth"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets:
+        - "api-auth:8081"
+        labels:
+          application: "api-auth"
