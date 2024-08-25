@@ -1,6 +1,7 @@
 services:
   postgres:
     image: 'postgres:latest'
+    container_name: postgres-usuario
     environment:
       POSTGRES_DB: usuarios
       POSTGRES_USER: root
@@ -10,12 +11,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - mercadox_network
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: api-usuario
     ports:
       - '8082:8082'
     depends_on:
@@ -30,11 +32,12 @@ services:
       SQS_ENDPOINT: http://localstack-main:4566
       S3_ENDPOINT: http://localstack-main:4566
     networks:
-      - app-network
+      - mercadox_network
 
 volumes:
   postgres_data:
 
 networks:
-  app-network:
+  mercadox_network:
+    name: mercadox_network
     driver: bridge
