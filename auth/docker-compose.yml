@@ -1,0 +1,16 @@
+services:
+  auth:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: api-auth
+    ports:
+      - '8081:8081'
+    environment:
+      USER_SERVICE_URL: http://api-usuario:8082
+    networks:
+      - mercadox_network
+
+networks:
+  mercadox_network:
+    external: true
