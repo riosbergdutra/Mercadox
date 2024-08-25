@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  observabilidade:
+    image: observabilidade
+    build:
+      context: .
+      dockerfile: ./Dockerfile
