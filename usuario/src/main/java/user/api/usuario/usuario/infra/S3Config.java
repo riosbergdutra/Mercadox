@@ -17,7 +17,7 @@ public class S3Config {
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-                .endpointOverride(URI.create("http://localstack-main:4566")) // Nome do serviço do LocalStack no Docker Compose
+                .endpointOverride(URI.create("http://localstack:4566")) // Nome do serviço do LocalStack no Docker Compose
                 .region(Region.US_EAST_1)
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
                 .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())

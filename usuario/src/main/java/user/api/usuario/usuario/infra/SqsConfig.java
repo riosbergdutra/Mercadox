@@ -18,7 +18,7 @@ public class SqsConfig {
     @Bean
     public SqsAsyncClient sqsAsyncClient() {
         return SqsAsyncClient.builder()
-                .endpointOverride(URI.create("http://localstack-main:4566")) // Nome do serviço do LocalStack no Docker Compose
+                .endpointOverride(URI.create("http://localstack:4566")) // Nome do serviço do LocalStack no Docker Compose
                 .region(Region.of(awsRegion))
                 .build();
     }
