@@ -1,4 +1,4 @@
 package auth.api.auth.dto;
 
-public record LoginResponse(String token, long expiresIn) {
+public record LoginResponse(String token,String refreshToken, long expiresIn) {
 }
