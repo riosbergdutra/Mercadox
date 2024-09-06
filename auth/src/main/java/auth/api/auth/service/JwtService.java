@@ -1,5 +1,6 @@
 package auth.api.auth.service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
@@ -70,22 +71,17 @@ public class JwtService {
     }
 
     public void setTokensInCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge((int) accessTokenExpiryDuration);
-        accessTokenCookie.setAttribute("SameSite", "Lax");
-        accessTokenCookie.setSecure(false);
-        response.addCookie(accessTokenCookie);
+    try {
+        // Configura e adiciona o cookie de accessToken
+        CookieService.setCookie(response, "accessToken", accessToken, (int) accessTokenExpiryDuration);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge((int) refreshTokenExpiryDuration);
-        refreshTokenCookie.setAttribute("SameSite", "Lax");
-        refreshTokenCookie.setSecure(false);
-        response.addCookie(refreshTokenCookie);
+        // Configura e adiciona o cookie de refreshToken
+        CookieService.setCookie(response, "refreshToken", refreshToken, (int) refreshTokenExpiryDuration);
+    } catch (IOException e) {
+        e.printStackTrace(); // Log da exceção
     }
+}
+
 
     public UsuarioDto validateUserByCredentials(String email, String senha) {
         String url = String.format("%s/usuario/email/", userServiceUrl);

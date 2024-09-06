@@ -37,8 +37,7 @@ public class TokenController {
             // Criar a resposta com os tokens e suas durações
             LoginResponse loginResponse = new LoginResponse(
                 accessToken,
-                refreshToken,
-                jwtService.getAccessTokenExpiryDuration() // Ajuste se necessário
+                refreshToken
             );
 
             return ResponseEntity.ok(loginResponse);
@@ -64,8 +63,7 @@ public class TokenController {
 
             LoginResponse loginResponse = new LoginResponse(
                 newAccessToken,
-                newRefreshToken,
-                jwtService.getAccessTokenExpiryDuration()
+                newRefreshToken
             );
 
             return ResponseEntity.ok(loginResponse);
