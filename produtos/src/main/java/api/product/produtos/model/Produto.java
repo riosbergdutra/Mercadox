@@ -20,9 +20,9 @@ import lombok.Data;
 @Data
 public class Produto {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false, name = "id_produto")
-    UUID idProduto;
+    Long idProduto;
 
     @Column(unique = true, nullable = false, name = "id_vendedor")
     UUID idVendedor;
