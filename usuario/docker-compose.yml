@@ -1,4 +1,3 @@
-version: '3.8'  # Ou a versão que você estiver usando
 
 services:
   postgres:
