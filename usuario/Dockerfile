@@ -12,7 +12,7 @@ COPY src ./src
 RUN mvn clean install -DskipTests
 
 # Etapa final - runtime
-FROM openjdk:21-jdk
+FROM openjdk:21-slim
 WORKDIR /app
 
 # Copia o JAR gerado da etapa de build
