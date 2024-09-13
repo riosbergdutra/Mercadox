@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.security.core.Authentication;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
+import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioTokenResponse;
 import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
@@ -62,6 +63,19 @@ public class UsuarioController {
     public ResponseEntity<UsuarioIdResponseDto> getUsuarioById(@PathVariable UUID id, Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         UsuarioIdResponseDto usuario = usuarioService.getUsuarioById(id, userId);
+        return ResponseEntity.ok(usuario);
+    }
+
+     /**
+     * Endpoint para obter detalhes de um usuário por ID.
+     * 
+     * @param id             ID do usuário a ser consultado.
+     * @param authentication Objeto de autenticação contendo o ID do usuário logado.
+     * @return ResponseEntity com o DTO do usuário e status 200 (OK).
+     */
+    @GetMapping("/token/{id}")
+    public ResponseEntity<UsuarioTokenResponse> getUsuarioForToken(@PathVariable UUID id) {
+        UsuarioTokenResponse usuario = usuarioService.getUsuarioForToken(id);
         return ResponseEntity.ok(usuario);
     }
 
