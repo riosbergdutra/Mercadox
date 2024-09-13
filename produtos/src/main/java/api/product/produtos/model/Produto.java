@@ -34,8 +34,7 @@ public class Produto {
     String UrlImagem;
 
     @Column(unique = true, nullable = false, name = "descricao")
-    Long descricao;
-
+    String descricao;
     @Column(unique = true, nullable = false, name = "url_fotos")
     List<String> urlFotos;
     @Column(unique = false, name = "data_criacao")
@@ -54,7 +53,7 @@ public class Produto {
     BigDecimal pontuacaoProduto = BigDecimal.ZERO;
 
     @Column(nullable = false, name = "quantidade_avaliadores")
-    int quantidadeAvaliadores =  0;
+    int quantidadeAvaliadores = 0;
 
     @OneToMany(mappedBy = "produto")
     private List<Avaliacao> avaliacoes;
