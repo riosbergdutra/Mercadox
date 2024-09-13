@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
+import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioTokenResponse;
 import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
@@ -117,6 +118,15 @@ public class UsuarioServiceImpl implements UsuarioService {
                         usuario.getSenha(),
                         usuario.getImagem(),
                         usuario.getDataConta()))
+                .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
+    }
+
+      @Override
+    public UsuarioTokenResponse getUsuarioForToken(UUID id) {
+        return usuarioRepository.findById(id)
+                .map(usuario -> new UsuarioTokenResponse(
+                        usuario.getIdUsuario(),
+                        usuario.getRole()))
                 .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
     }
 

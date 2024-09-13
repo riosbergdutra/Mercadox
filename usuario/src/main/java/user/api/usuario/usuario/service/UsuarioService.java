@@ -3,6 +3,7 @@ package user.api.usuario.usuario.service;
 import java.util.UUID;
 
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
+import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioTokenResponse;
 import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
@@ -17,6 +18,8 @@ public interface UsuarioService {
 
     // metodo na qual o autenticador vai se comunicar via http para criar o token
     public UsuarioEmailDto getUsuarioByEmail(String email, String senha);
+
+    UsuarioTokenResponse getUsuarioForToken(UUID id);
 
     // permite o usuario mudar a senha (precisa ser autenticado)
     public String mudarSenha(UUID id, UUID userId, MudarSenhaRequest mudarSenhaRequest);
