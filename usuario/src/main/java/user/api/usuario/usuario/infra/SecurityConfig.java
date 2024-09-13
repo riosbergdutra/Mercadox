@@ -21,7 +21,8 @@ import java.security.interfaces.RSAPublicKey;
 /**
  * Configuração de segurança da aplicação.
  * 
- * Esta classe configura a segurança da aplicação utilizando Spring Security, incluindo a configuração de autenticação com JWT,
+ * Esta classe configura a segurança da aplicação utilizando Spring Security,
+ * incluindo a configuração de autenticação com JWT,
  * controle de acesso, suporte a CORS e criptografia de senhas.
  */
 @Configuration
@@ -42,19 +43,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
-                .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
-                .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
-                .anyRequest().authenticated())
-            .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults()) // Adiciona suporte ao CORS
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/usuario/token/{id}").permitAll()
+                        .anyRequest().authenticated())
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
@@ -67,7 +68,7 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
-    
+
     /**
      * Configura o suporte a CORS na aplicação.
      * 
@@ -79,10 +80,10 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8000", "http://localhost:8081", "http://localhost:8082")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
+                        .allowedOriginPatterns("*") // Permite todas as origens
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // Permite credenciais (cookies)
             }
         };
     }
