@@ -49,7 +49,7 @@ public class JwtService {
                 .subject(user.idUsuario())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(accessTokenExpiryDuration))
-                .claim("role", user.role())
+                .claim("scope", user.role())
                 .claim("userId", user.idUsuario())
                 .build();
 
@@ -63,7 +63,6 @@ public class JwtService {
                 .subject(user.idUsuario())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(refreshTokenExpiryDuration))
-                .claim("role", user.role())
                 .claim("userId", user.idUsuario())
                 .build();
 
