@@ -12,8 +12,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -48,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos/findall").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto").hasAuthority("VENDEDOR")
+                        .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto").hasAuthority("SCOPE_VENDEDOR")
                         .requestMatchers(HttpMethod.GET, "/produtos/{id}").permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
@@ -85,18 +83,6 @@ public class SecurityConfig {
                         .allowCredentials(true); // Permite credenciais (cookies)
             }
         };
-    }
-
-     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        
-        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        authoritiesConverter.setAuthoritiesClaimName("role"); // Nome da claim onde as authorities estão
-        authoritiesConverter.setAuthorityPrefix(""); // Prefixo não é necessário se já está na forma desejada
-        
-        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
-        return converter;
     }
 
     /**
