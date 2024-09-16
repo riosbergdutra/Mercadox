@@ -46,7 +46,7 @@ public class Produto {
     @Column(unique = false, nullable = false, name = "preco_produto")
     BigDecimal PrecoProduto;
 
-    @Column(unique = true, nullable = false, name = "categoria_produto")
+    @Column(unique = false, nullable = false, name = "categoria_produto")
     CategoriaProduto categoriaProduto;
 
     @Column(nullable = false, name = "pontuacao_produto")
