@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,76 @@ public class ProdutoServiceImpl implements ProdutoService {
     private S3Service s3Service;
 
     @Override
+    public ProdutoDtoResponse updateProduto(Long idProduto, ProdutoDtoRequest produtoDtoRequest, UUID userId) {
+        // Verifica se o vendedor tem permissão para atualizar o produto
+        Produto produto = verificarVendedor(userId, idProduto);
+
+        produto.setNomeProduto(produtoDtoRequest.nomeProduto());
+        produto.setDescricao(produtoDtoRequest.descricao());
+        produto.setPrecoProduto(produtoDtoRequest.precoProduto());
+        produto.setCategoriaProduto(produtoDtoRequest.categoriaProduto());
+        produto.setCidadeVendedor(produtoDtoRequest.cidadeVendedor());
+
+        // Atualizar imagem principal, se houver
+        if (produtoDtoRequest.imagem() != null && !produtoDtoRequest.imagem().isEmpty()) {
+            String imagemKey = userId.toString() + "/" + UUID.randomUUID() + ".jpg";
+            try {
+                String imagemUrl = s3Service.uploadImagemS3(imagemKey, produtoDtoRequest.imagem());
+                produto.setUrlImagem(imagemUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao fazer upload da imagem", e);
+            }
+        }
+
+        // Atualizar fotos adicionais, se houver
+        if (produtoDtoRequest.fotos() != null && !produtoDtoRequest.fotos().isEmpty()) {
+            List<String> fotosUrls = produtoDtoRequest.fotos().stream()
+                    .filter(foto -> !foto.isEmpty())
+                    .map(foto -> {
+                        String fotoKey = userId.toString() + "/" + UUID.randomUUID() + ".jpg";
+                        try {
+                            return s3Service.uploadImagemS3(fotoKey, foto);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Erro ao fazer upload da foto", e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            produto.setUrlFotos(fotosUrls);
+        }
+
+        Produto produtoAtualizado = produtoRepository.save(produto);
+
+        return new ProdutoDtoResponse(
+                produtoAtualizado.getIdProduto(),
+                produtoAtualizado.getNomeProduto(),
+                produtoAtualizado.getUrlImagem(),
+                produtoAtualizado.getUrlFotos(),
+                produtoAtualizado.getPrecoProduto(),
+                produtoAtualizado.getCategoriaProduto(),
+                produtoAtualizado.getCidadeVendedor());
+    }
+
+    @Override
+    public void deleteProduto(Long idProduto, UUID userId) {
+        // Verifica se o vendedor tem permissão para excluir o produto
+        Produto produto = verificarVendedor(userId, idProduto);
+    
+        // Excluir a imagem principal e fotos adicionais do S3
+        Stream.concat(
+                Stream.ofNullable(produto.getUrlImagem()), 
+                produto.getUrlFotos() != null ? produto.getUrlFotos().stream() : Stream.empty()
+        ).forEach(url -> {
+            String key = url.substring(url.lastIndexOf("/") + 1);
+            s3Service.deleteImagemS3(key);
+        });
+    
+        // Excluir o produto do banco de dados
+        produtoRepository.delete(produto);
+    }
+    
+    
+
+    @Override
     public List<ProdutoDtoResponse> getAllProdutos() {
         try {
             List<Produto> produtos = produtoRepository.findAll();
@@ -37,6 +108,7 @@ public class ProdutoServiceImpl implements ProdutoService {
                             produto.getIdProduto(),
                             produto.getNomeProduto(),
                             produto.getUrlImagem(),
+                            produto.getUrlFotos(),
                             produto.getPrecoProduto(),
                             produto.getCategoriaProduto(),
                             produto.getCidadeVendedor()))
@@ -65,17 +137,17 @@ public class ProdutoServiceImpl implements ProdutoService {
         // Comparar o ID do vendedor com o ID do token
         if (!userId.equals(produtoDtoRequest.idVendedor())) {
             throw new UsuarioNotFoundException(
-                "Vendedor com ID: " + userId + " não encontrado ou não autorizado.");
+                    "Vendedor com ID: " + userId + " não encontrado ou não autorizado.");
         }
-        
+
         Produto novoProduto = new Produto();
-        novoProduto.setIdVendedor(userId);  // Definindo o ID do vendedor
+        novoProduto.setIdVendedor(userId); // Definindo o ID do vendedor
         novoProduto.setNomeProduto(produtoDtoRequest.nomeProduto());
         novoProduto.setDescricao(produtoDtoRequest.descricao());
         novoProduto.setCidadeVendedor(produtoDtoRequest.cidadeVendedor());
         novoProduto.setPrecoProduto(produtoDtoRequest.precoProduto());
         novoProduto.setCategoriaProduto(produtoDtoRequest.categoriaProduto());
-    
+
         // Manipular a imagem principal
         if (produtoDtoRequest.imagem() != null && !produtoDtoRequest.imagem().isEmpty()) {
             String imagemKey = userId.toString() + "/" + UUID.randomUUID() + ".jpg";
@@ -87,7 +159,7 @@ public class ProdutoServiceImpl implements ProdutoService {
             }
             novoProduto.setUrlImagem(imagemUrl);
         }
-    
+
         // Manipular as fotos adicionais
         if (produtoDtoRequest.fotos() != null && !produtoDtoRequest.fotos().isEmpty()) {
             List<String> fotosUrls = produtoDtoRequest.fotos().stream()
@@ -103,22 +175,23 @@ public class ProdutoServiceImpl implements ProdutoService {
                     .collect(Collectors.toList());
             novoProduto.setUrlFotos(fotosUrls);
         }
-    
+
         Produto produtoSalvo = produtoRepository.save(novoProduto);
-    
+
         return new ProdutoDtoResponse(
                 produtoSalvo.getIdProduto(),
                 produtoSalvo.getNomeProduto(),
                 produtoSalvo.getUrlImagem(),
+                produtoSalvo.getUrlFotos(),
                 produtoSalvo.getPrecoProduto(),
                 produtoSalvo.getCategoriaProduto(),
                 produtoSalvo.getCidadeVendedor());
     }
-    
-    private void verificarVendedor(UUID userId) {
-        produtoRepository.findByIdVendedor(userId)
-                .filter(vendedor -> userId.equals(vendedor.getIdVendedor()))
+
+    private Produto verificarVendedor(UUID userId, Long idProduto) {
+        return produtoRepository.findByIdVendedorAndIdProduto(userId, idProduto)
                 .orElseThrow(() -> new UsuarioNotFoundException(
-                        "Vendedor com ID: " + userId + " não encontrado ou não autorizado."));
+                        "Vendedor com ID: " + userId + " não autorizado para o produto com ID: " + idProduto));
     }
+
 }

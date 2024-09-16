@@ -12,4 +12,6 @@ public interface ProdutoService {
      public List<ProdutoDtoResponse> getAllProdutos();
      public ProdutoByIdResponse getProdutoById(Long id);
      public ProdutoDtoResponse addProduto(ProdutoDtoRequest produtoDtoRequest, UUID IdVendedor);
+     public ProdutoDtoResponse updateProduto(Long idProduto, ProdutoDtoRequest produtoDtoRequest, UUID userId);
+     public void deleteProduto(Long idProduto, UUID userId);
 }
