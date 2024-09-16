@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +28,33 @@ public class ProdutoController {
 
     @Autowired
     private ProdutoService produtoService;
+
+     // Atualizar produto
+    @PutMapping("/{idVendedor}/atualizarproduto/{idProduto}")
+    public ResponseEntity<ProdutoDtoResponse> updateProduto(
+            @PathVariable("idVendedor") UUID idVendedor,
+            @PathVariable("idProduto") Long idProduto,
+            @ModelAttribute @Valid ProdutoDtoRequest produtoDtoRequest,
+            Authentication authentication) {
+        UUID userId = getUserIdFromAuthentication(authentication);
+
+        // Chama o serviço para atualizar o produto
+        ProdutoDtoResponse produtoAtualizado = produtoService.updateProduto(idProduto, produtoDtoRequest, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(produtoAtualizado);
+    }
+
+    // Remover produto
+    @DeleteMapping("/{idVendedor}/deletarproduto/{idProduto}")
+    public ResponseEntity<Void> deleteProduto(
+            @PathVariable("idVendedor") UUID idVendedor,
+            @PathVariable("idProduto") Long idProduto,
+            Authentication authentication) {
+        UUID userId = getUserIdFromAuthentication(authentication);
+
+        // Chama o serviço para deletar o produto
+        produtoService.deleteProduto(idProduto, userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
     
     @PostMapping("/{idVendedor}/criarproduto")
     public ResponseEntity<ProdutoDtoResponse> addProduto(
