@@ -18,13 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.security.interfaces.RSAPublicKey;
 
-/**
- * Configuração de segurança da aplicação.
- * 
- * Esta classe configura a segurança da aplicação utilizando Spring Security,
- * incluindo a configuração de autenticação com JWT,
- * controle de acesso, suporte a CORS e criptografia de senhas.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -33,28 +26,24 @@ public class SecurityConfig {
     @Value("${jwt.public.key}")
     private RSAPublicKey publicKey;
 
-    /**
-     * Configura o filtro de segurança da aplicação.
-     * 
-     * @param http Configuração de segurança HTTP.
-     * @return Configuração do filtro de segurança.
-     * @throws Exception Se houver algum problema ao configurar a segurança.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos/findall").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto")
-                        .hasAuthority("SCOPE_VENDEDOR")
                         .requestMatchers(HttpMethod.GET, "/produtos/{id}").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto")
-                        .hasAuthority("SCOPE_VENDEDOR")
-                        .requestMatchers(HttpMethod.PUT, "/{idVendedor}/atualizarproduto/{idProduto}")
-                        .hasAuthority("SCOPE_VENDEDOR")
-                        .requestMatchers(HttpMethod.DELETE, "/{idVendedor}/deletarproduto/{idProduto}")
-                        .hasAuthority("SCOPE_VENDEDOR")
+                        .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto").hasAuthority("SCOPE_VENDEDOR")
+                        .requestMatchers(HttpMethod.PUT, "/{idVendedor}/atualizarproduto/{idProduto}").hasAuthority("SCOPE_VENDEDOR")
+                        .requestMatchers(HttpMethod.DELETE, "/{idVendedor}/deletarproduto/{idProduto}").hasAuthority("SCOPE_VENDEDOR")
+                        
+                        // Regras para avaliações
+                        .requestMatchers(HttpMethod.POST, "/avaliacoes/{idUsuario}/criar").hasAuthority("SCOPE_USUARIO")
+                        .requestMatchers(HttpMethod.PUT, "/avaliacoes/{idUsuario}/{idAvaliacao}/atualizar").hasAuthority("SCOPE_USUARIO")
+                        .requestMatchers(HttpMethod.DELETE, "/avaliacoes/{idUsuario}/{idAvaliacao}/deletar").hasAuthority("SCOPE_USUARIO")
+                        .requestMatchers(HttpMethod.GET, "/avaliacoes/produto/{idProduto}").permitAll() 
+                        .requestMatchers(HttpMethod.GET, "/avaliacoes/{idAvaliacao}").permitAll() 
+                        .requestMatchers(HttpMethod.GET, "/avaliacoes/media/{idProduto}").permitAll() 
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -63,40 +52,25 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Configura o decodificador de JWT utilizando a chave pública fornecida.
-     * 
-     * @return Decodificador JWT.
-     */
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
 
-    /**
-     * Configura o suporte a CORS na aplicação.
-     * 
-     * @return Configuração do WebMvcConfigurer para CORS.
-     */
     @Bean
     public WebMvcConfigurer webMvcConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("*") // Permite todas as origens
+                        .allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true); // Permite credenciais (cookies)
+                        .allowCredentials(true);
             }
         };
     }
 
-    /**
-     * Configura o encoder de senha BCrypt.
-     * 
-     * @return Encoder de senha BCrypt.
-     */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
