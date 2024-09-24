@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
+import api.product.produtos.dtos.carrinhodto.CarrinhoDtoRequest;
 import api.product.produtos.dtos.produtobyidDto.ProdutoByIdResponse;
 import api.product.produtos.exceptions.FindAllProductsException;
 import api.product.produtos.exceptions.ProdutoNotFoundException;
@@ -186,6 +188,24 @@ public class ProdutoServiceImpl implements ProdutoService {
                 produtoSalvo.getPrecoProduto(),
                 produtoSalvo.getCategoriaProduto(),
                 produtoSalvo.getCidadeVendedor());
+    }
+
+    @Override
+    public void adicionarProdutoAoCarrinho(Long idProduto, UUID userId, int quantidade) {
+        // Verifica se o produto existe
+        Produto produto = produtoRepository.findById(idProduto)
+            .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
+
+        // Preparar DTO para o carrinho
+        CarrinhoDtoRequest carrinhoDtoRequest = new CarrinhoDtoRequest();
+        carrinhoDtoRequest.setIdProduto(produto.getIdProduto());
+        carrinhoDtoRequest.setIdVendedor(produto.getIdVendedor());
+        carrinhoDtoRequest.setQuantidade(quantidade);
+
+        // Fazer chamada para a API do carrinho
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:8084/carrinho/adicionar"; // URL da API do carrinho
+        restTemplate.postForEntity(url, carrinhoDtoRequest, Void.class);
     }
 
     private Produto verificarVendedor(UUID userId, Long idProduto) {
