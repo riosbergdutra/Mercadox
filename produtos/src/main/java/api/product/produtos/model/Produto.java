@@ -22,38 +22,38 @@ public class Produto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false, name = "id_produto")
-    Long idProduto;
+    private Long idProduto;
 
     @Column(unique = true, nullable = false, name = "id_vendedor")
-    UUID idVendedor;
+    private UUID idVendedor;
 
     @Column(unique = false, nullable = false, name = "nome_produto")
-    String nomeProduto;
+    private String nomeProduto;
 
     @Column(unique = true, nullable = false, name = "url_imagem")
-    String UrlImagem;
+    private String UrlImagem;
 
     @Column(unique = true, nullable = false, name = "descricao")
-    String descricao;
+    private String descricao;
     @Column(unique = true, nullable = false, name = "url_fotos")
-    List<String> urlFotos;
+    private List<String> urlFotos;
     @Column(unique = false, name = "data_criacao")
-    LocalDate dataCriacao = LocalDate.now();
+    private LocalDate dataCriacao = LocalDate.now();
 
     @Column(unique = false, nullable = false, name = "cidade_vendedor")
-    String cidadeVendedor;
+    private String cidadeVendedor;
 
     @Column(unique = false, nullable = false, name = "preco_produto")
-    BigDecimal PrecoProduto;
+    private BigDecimal PrecoProduto;
 
     @Column(unique = false, nullable = false, name = "categoria_produto")
-    CategoriaProduto categoriaProduto;
+    private CategoriaProduto categoriaProduto;
 
     @Column(nullable = false, name = "pontuacao_produto")
-    BigDecimal pontuacaoProduto = BigDecimal.ZERO;
+    private BigDecimal pontuacaoProduto = BigDecimal.ZERO;
 
     @Column(nullable = false, name = "quantidade_avaliadores")
-    int quantidadeAvaliadores = 0;
+    private int quantidadeAvaliadores = 0;
 
     @OneToMany(mappedBy = "produto")
     private List<Avaliacao> avaliacoes;
