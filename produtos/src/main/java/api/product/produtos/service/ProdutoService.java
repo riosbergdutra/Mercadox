@@ -14,4 +14,6 @@ public interface ProdutoService {
      public ProdutoDtoResponse addProduto(ProdutoDtoRequest produtoDtoRequest, UUID IdVendedor);
      public ProdutoDtoResponse updateProduto(Long idProduto, ProdutoDtoRequest produtoDtoRequest, UUID userId);
      public void deleteProduto(Long idProduto, UUID userId);
+     public void adicionarProdutoAoCarrinho(Long idProduto, UUID userId, int quantidade);
+     
 }
