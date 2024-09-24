@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    container_name: postgres-carrinho
+    environment:
+      POSTGRES_DB: carrinho
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mercadox_network
+
+volumes:
+  postgres_data:
+
+networks:
+  mercadox_network:
+    external: true
