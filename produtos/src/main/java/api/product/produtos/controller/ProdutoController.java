@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
@@ -29,7 +30,7 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
-     // Atualizar produto
+    // Atualizar produto
     @PutMapping("/{idVendedor}/atualizarproduto/{idProduto}")
     public ResponseEntity<ProdutoDtoResponse> updateProduto(
             @PathVariable("idVendedor") UUID idVendedor,
@@ -55,7 +56,7 @@ public class ProdutoController {
         produtoService.deleteProduto(idProduto, userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-    
+
     @PostMapping("/{idVendedor}/criarproduto")
     public ResponseEntity<ProdutoDtoResponse> addProduto(
             @PathVariable("idVendedor") UUID idVendedor,
@@ -76,6 +77,17 @@ public class ProdutoController {
     public ResponseEntity<ProdutoByIdResponse> getProdutoById(@PathVariable Long id) {
         ProdutoByIdResponse produto = produtoService.getProdutoById(id);
         return new ResponseEntity<>(produto, HttpStatus.OK);
+    }
+
+    @PostMapping("/{userId}/adicionarAoCarrinho/{idProduto}")
+    public ResponseEntity<Void> adicionarProdutoAoCarrinho(
+            @PathVariable("userId") UUID userId,
+            @PathVariable("idProduto") Long idProduto,
+            @RequestParam int quantidade) {
+
+        produtoService.adicionarProdutoAoCarrinho(idProduto, userId, quantidade);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
