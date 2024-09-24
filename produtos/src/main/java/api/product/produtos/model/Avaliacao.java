@@ -20,13 +20,13 @@ public class Avaliacao {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(unique = true, nullable = false, name = "id_avaliacao")
-    UUID idAvaliacao;
+    private UUID idAvaliacao;
 
     @Column(nullable = false, name = "id_usuario")
-    UUID idUsuario;
+    private UUID idUsuario;
 
     @Column(nullable = false, name = "pontuacao")
-    BigDecimal pontuacao;
+    private BigDecimal pontuacao;
 
     @ManyToOne
     @JoinColumn(name = "id_produto", nullable = false)
