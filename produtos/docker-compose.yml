@@ -13,6 +13,27 @@ services:
     networks:
       - mercadox_network
 
+ # app:
+  #  build:
+   #   context: .
+    #  dockerfile: ./Dockerfile
+    #container_name: api-produtos
+   # ports:
+   #   - '8083:8083'
+   # depends_on:
+   #   - postgres
+   # environment:
+   #   SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/produtos
+   #   SPRING_DATASOURCE_USERNAME: root
+   #   SPRING_DATASOURCE_PASSWORD: root
+   #   AWS_REGION: us-east-1
+   #   AWS_ACCESS_KEY_ID: test
+   #   AWS_SECRET_ACCESS_KEY: test
+   #   SQS_ENDPOINT: http://localstack:4566
+   #   S3_ENDPOINT: http://localstack:4566
+   # networks:
+   #  - mercadox_network
+
 volumes:
   postgres_data:
 
