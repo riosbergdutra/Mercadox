@@ -96,6 +96,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // Salva o novo usuário com endereços
         usuarioRepository.save(novoUsuario);
+        
+        // Envia uma mensagem para a fila SQS após a criação do usuário
+	String queueUrl = "http://localhost:4566/000000000000/usuario/criar"; // URL da fila SQS para criação de usuário
+	String messageBody = "Novo Usuário Criado: IdUsuario: " + novoUsuario.getIdUsuario() + ", Nome: " + novoUsuario.getNome();
+	sqsTemplate.send(queueUrl, messageBody);
+
 
         // Retorna a resposta com os dados do usuário criado
         return new UsuarioResponseDto(novoUsuario.getNome(), novoUsuario.getEmail(), novoUsuario.getImagem());
