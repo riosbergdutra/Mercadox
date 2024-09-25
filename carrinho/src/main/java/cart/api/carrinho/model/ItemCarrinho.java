@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class ItemCarrinho {
      private Long idProduto;
-     
      @Min(1)
      private Integer quantidade;
-}
+} 
