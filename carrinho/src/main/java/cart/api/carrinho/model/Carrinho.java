@@ -1,8 +1,9 @@
 package cart.api.carrinho.model;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.UUID;
+import java.util.List;
+
 import jakarta.persistence.*;
 
 import lombok.Data;
@@ -21,5 +22,5 @@ public class Carrinho {
     
     @ElementCollection
     @CollectionTable(name = "item_carrinho", joinColumns = @JoinColumn(name = "id_carrinho"))
-    private List<ItemCarrinho> itens = new ArrayList<>();
+    private List<ItemCarrinho> itens;
 }
