@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
 import api.product.produtos.dtos.produtobyidDto.ProdutoByIdResponse;
+import api.product.produtos.exceptions.UsuarioNotFoundException;
 import api.product.produtos.service.ProdutoService;
 import jakarta.validation.Valid;
 
@@ -81,9 +82,15 @@ public class ProdutoController {
 
     @PostMapping("/{userId}/adicionarAoCarrinho/{idProduto}")
     public ResponseEntity<Void> adicionarProdutoAoCarrinho(
-            @PathVariable("userId") UUID userId,
+            @PathVariable("userId") UUID idUsuario,
             @PathVariable("idProduto") Long idProduto,
-            @RequestParam int quantidade) {
+            @RequestParam int quantidade,
+            Authentication authentication) {
+        UUID userId = getUserIdFromAuthentication(authentication);
+
+        if (!idUsuario.equals(userId)) {
+            throw new UsuarioNotFoundException("O ID do usuário na URL não corresponde ao ID no token.");
+        }
 
         produtoService.adicionarProdutoAoCarrinho(idProduto, userId, quantidade);
 
