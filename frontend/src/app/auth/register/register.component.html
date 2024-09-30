@@ -1,0 +1,62 @@
+<ng-container *ngIf="isStepOne; else stepTwo">
+    <!-- Conteúdo da primeira etapa -->
+    <form [formGroup]="registerForm" (ngSubmit)="nextStep()">
+      <!-- Campos da primeira etapa -->
+      <div>
+        <label for="nome">Nome:</label>
+        <input id="nome" formControlName="nome" required>
+      </div>
+      <div>
+        <label for="email">Email:</label>
+        <input id="email" type="email" formControlName="email" required>
+      </div>
+      <div>
+        <label for="senha">Senha:</label>
+        <input id="senha" type="password" formControlName="senha" required>
+      </div>
+      <div>
+        <label for="role">Role:</label>
+        <select id="role" formControlName="role" (change)="onRoleChange()" required>
+          <option value="">Selecione...</option>
+          <option value="USUARIO">Usuário</option>
+          <option value="VENDEDOR">Vendedor</option>
+        </select>
+      </div>
+      <button type="submit">Próximo</button>
+    </form>
+  </ng-container>
+  
+  <ng-template #stepTwo>
+    <!-- Conteúdo da segunda etapa -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <!-- Campos do endereço -->
+      <div formGroupName="endereco"> <!-- Adicionando o formGroupName aqui -->
+        <div>
+          <label for="rua">Rua:</label>
+          <input id="rua" formControlName="rua" required>
+        </div>
+        <div>
+          <label for="numero">Número:</label>
+          <input id="numero" formControlName="numero" required>
+        </div>
+        <div>
+          <label for="cidade">Cidade:</label>
+          <input id="cidade" formControlName="cidade" required>
+        </div>
+        <div>
+          <label for="estado">Estado:</label>
+          <input id="estado" formControlName="estado" required>
+        </div>
+        <div>
+          <label for="cep">CEP:</label>
+          <input id="cep" formControlName="cep" required>
+        </div>
+      </div>
+      <div *ngIf="isVendedor">
+        <label for="imagem">Imagem:</label>
+        <input id="imagem" type="file" (change)="onFileSelected($event)">
+      </div>
+      <button type="submit">Registrar</button>
+    </form>
+  </ng-template>
+  
