@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { AbstractType, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 export interface LoginRequest {
@@ -32,10 +32,10 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(loginRequest: LoginRequest): Observable<void> { 
-    return this.http.post<void>(`${this.authUrl}/login`, loginRequest);
+  login(loginRequest: LoginRequest): Observable<void> {
+    return this.http.post<void>(`${this.authUrl}/login`, loginRequest, { withCredentials: true });
   }
-
+  
   refreshToken(): Observable<void> { 
     return this.http.post<void>(`${this.authUrl}/refresh`, {});
   }
