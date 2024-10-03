@@ -1,1 +1,19 @@
-<p>login works!</p>
+<div class="container">
+  <h2>Login</h2>
+  <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input id="email" formControlName="email" type="email" required>
+      </div>
+      <div class="form-group">
+        <label for="senha">Senha:</label>
+        <input id="senha" formControlName="senha" type="password" required>
+      </div>
+      <button type="submit">Login</button>
+  </form>
+
+  <!-- Mostra uma mensagem de erro se o login falhar -->
+  <div *ngIf="loginError" class="error-message">
+    Login falhou. Verifique suas credenciais.
+  </div>
+</div>
