@@ -26,8 +26,8 @@ export interface UsuarioRequestDto {
   providedIn: 'root'
 })
 export class AuthService {
-  private authUrl = 'http://localhost:8081/auth';
-  private registerUrl = 'http://localhost:8082/usuario';
+  private authUrl = 'http://localhost:8000/auth';
+  private registerUrl = 'http://localhost:8000/usuario';
 
 
   constructor(private http: HttpClient) { }
