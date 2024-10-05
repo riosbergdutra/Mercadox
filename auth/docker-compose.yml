@@ -9,8 +9,8 @@ services:
     environment:
       USER_SERVICE_URL: http://api-usuario:8082
     networks:
-      - mercadox_network
+      - compose_kong-net
 
 networks:
-  mercadox_network:
+  compose_kong-net:
     external: true

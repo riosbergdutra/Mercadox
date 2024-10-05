@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - mercadox_network
+      - compose_kong-net
 
   app:
     build:
@@ -34,7 +34,7 @@ services:
       SQS_ENDPOINT: http://localstack:4566
       S3_ENDPOINT: http://localstack:4566
     networks:
-      - mercadox_network
+      - compose_kong-net
 
   localstack:
     image: localstack/localstack
@@ -45,12 +45,11 @@ services:
     environment:
       DOCKER_HOST: unix:///var/run/docker.sock
     networks:
-      - mercadox_network
+      - compose_kong-net
 
 volumes:
   postgres_data:
 
 networks:
-  mercadox_network:
-    name: mercadox_network
-    driver: bridge
+  compose_kong-net:
+    external: true

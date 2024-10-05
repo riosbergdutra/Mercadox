@@ -11,11 +11,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - mercadox_network
+      - kong-net
 
 volumes:
   postgres_data:
 
 networks:
-  mercadox_network:
+  kong-net:
     external: true
