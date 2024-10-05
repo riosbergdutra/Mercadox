@@ -1,5 +1,5 @@
 networks:
-  mercadox_network:
+  kong-net:
     external: true
 
 volumes:
@@ -14,7 +14,7 @@ services:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     networks:
-      - mercadox_network
+      - kong-net
     ports:
       - "9090:9090"
 
@@ -24,4 +24,4 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - mercadox_network
+      - kong-net
