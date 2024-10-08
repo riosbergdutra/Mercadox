@@ -1,6 +1,8 @@
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { AbstractType, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { AbstractType, Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { finalize, Observable } from 'rxjs';
+import { LoadingService } from '../loading/loading.service';
 
 export interface LoginRequest {
   email: string;
@@ -30,12 +32,14 @@ export class AuthService {
   private registerUrl = 'http://localhost:8000/usuario';
 
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object, private loadingService: LoadingService) { }
 
   login(loginRequest: LoginRequest): Observable<void> {
-    return this.http.post<void>(`${this.authUrl}/login`, loginRequest, { withCredentials: true });
+    this.loadingService.show(); // Mostrar loading
+    return this.http.post<void>(`${this.authUrl}/login`, loginRequest, { withCredentials: true })
+      .pipe(finalize(() => this.loadingService.hide())); // Ocultar loading após a requisição
   }
-  
+
   refreshToken(): Observable<void> { 
     return this.http.post<void>(`${this.authUrl}/refresh`, {});
   }
@@ -45,9 +49,11 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    // Se quiser verificar a presença do cookie
+   if (isPlatformBrowser(this.platformId)) {
     return document.cookie.includes('accessToken');
   }
+  return false;
+}
 
   register(usuarioRequest: FormData): Observable<void> {
     return this.http.post<void>(`${this.registerUrl}/criar`, usuarioRequest);
