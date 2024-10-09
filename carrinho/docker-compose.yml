@@ -11,11 +11,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - kong-net
+      - compose_kong-net
 
 volumes:
   postgres_data:
 
 networks:
-  kong-net:
+  compose_kong-net:
     external: true
