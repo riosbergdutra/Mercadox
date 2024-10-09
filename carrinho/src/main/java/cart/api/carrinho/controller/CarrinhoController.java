@@ -31,12 +31,9 @@ public class CarrinhoController {
 
         UUID userId = UUID.fromString(authentication.getName());
 
-        Optional<Carrinho> carrinho = carrinhoService.getCarrinhoByIdUsuario(idUsuario, userId);
+        Carrinho carrinho = carrinhoService.getCarrinhoByIdUsuario(idUsuario, userId);
 
-        if (carrinho.isPresent()) {
-            return ResponseEntity.ok(carrinho.get());
-        } else {
-            return ResponseEntity.status(404).body("Carrinho não encontrado ou não autorizado.");
-        }
+        return ResponseEntity.ok(carrinho);
+
     }
 }
