@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class Carrinho {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // ou UUID se suportado
+    @GeneratedValue(strategy = GenerationType.UUID) // ou UUID se suportado
     @Column(unique = true, nullable = false, name = "id_carrinho")
     private UUID idCarrinho;
 
