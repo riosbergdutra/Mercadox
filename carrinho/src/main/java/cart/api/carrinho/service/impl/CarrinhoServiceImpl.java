@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cart.api.carrinho.exceptions.CarrinhoNotFoundException;
 import cart.api.carrinho.model.Carrinho;
 import cart.api.carrinho.repository.CarrinhoRepository;
 import cart.api.carrinho.service.CarrinhoService;
@@ -16,10 +17,12 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     CarrinhoRepository carrinhoRepository;
 
     @Override
-    public Optional<Carrinho> getCarrinhoByIdUsuario(UUID idUsuario, UUID userId) {
+    public Carrinho getCarrinhoByIdUsuario(UUID idUsuario, UUID userId) {
         return carrinhoRepository.findByIdUsuario(idUsuario)
-                .filter(carrinho -> carrinho.getIdUsuario().equals(userId));
+                .filter(carrinho -> carrinho.getIdUsuario().equals(userId))
+                .orElseThrow(() -> new CarrinhoNotFoundException("Carrinho não encontrado ou não autorizado."));
     }
+    
     /**
      * Processa a mensagem SQS para executar ações no carrinho.
      *
