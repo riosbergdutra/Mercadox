@@ -59,49 +59,47 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDto saveUsuario(UsuarioRequestDto usuarioDto) {
         Usuario novoUsuario = new Usuario();
-        novoUsuario.setIdUsuario(UUID.randomUUID());
-        novoUsuario.setNome(usuarioDto.nome());
-        novoUsuario.setEmail(usuarioDto.email());
-        novoUsuario.setSenha(passwordEncoder.encode(usuarioDto.senha()));
-        novoUsuario.setRole(usuarioDto.role());
-        novoUsuario.setDataConta(LocalDate.now());
+    novoUsuario.setNome(usuarioDto.nome());
+    novoUsuario.setEmail(usuarioDto.email());
+    novoUsuario.setSenha(passwordEncoder.encode(usuarioDto.senha()));
+    novoUsuario.setRole(usuarioDto.role());
+    novoUsuario.setDataConta(LocalDate.now());
 
-        // Configurar e salvar o endereço
-        Endereco endereco = new Endereco();
-        EnderecoDto dto = usuarioDto.endereco();
-        endereco.setRua(dto.rua());
-        endereco.setNumero(dto.numero());
-        endereco.setCidade(dto.cidade());
-        endereco.setEstado(dto.estado());
-        endereco.setCep(dto.cep());
-        endereco.setUsuario(novoUsuario); // Associa o endereço ao usuário
+    // Configurar e salvar o endereço
+    Endereco endereco = new Endereco();
+    EnderecoDto dto = usuarioDto.endereco();
+    endereco.setRua(dto.rua());
+    endereco.setNumero(dto.numero());
+    endereco.setCidade(dto.cidade());
+    endereco.setEstado(dto.estado());
+    endereco.setCep(dto.cep());
+    endereco.setUsuario(novoUsuario); // Associa o endereço ao usuário
 
-        novoUsuario.setEnderecos(List.of(endereco)); // Coloque o endereço em uma lista
+    novoUsuario.setEnderecos(List.of(endereco)); // Coloque o endereço em uma lista
 
-        // Manipulação de imagem apenas se o usuário for VENDEDOR
-        if (usuarioDto.role() == Role.VENDEDOR) {
-            Optional.ofNullable(usuarioDto.imagem())
-                    .filter(imagem -> !imagem.isEmpty())
-                    .ifPresent(imagem -> {
-                        String userId = novoUsuario.getIdUsuario().toString();
-                        String imagemKey = userId + "/" + UUID.randomUUID() + ".jpg";
-                        try {
-                            String imagemUrl = s3Service.uploadImagemS3(imagemKey, imagem);
-                            novoUsuario.setImagem(imagemUrl);
-                        } catch (IOException e) {
-                            throw new RuntimeException("error.upload", e);
-                        }
-                    });
-        }
+    // Manipulação de imagem apenas se o usuário for VENDEDOR
+    if (usuarioDto.role() == Role.VENDEDOR) {
+        Optional.ofNullable(usuarioDto.imagem())
+                .filter(imagem -> !imagem.isEmpty())
+                .ifPresent(imagem -> {
+                    String imagemKey = UUID.randomUUID() + ".jpg"; // Gera uma nova imagem com UUID
+                    try {
+                        String imagemUrl = s3Service.uploadImagemS3(imagemKey, imagem);
+                        novoUsuario.setImagem(imagemUrl);
+                    } catch (IOException e) {
+                        throw new RuntimeException("error.upload", e);
+                    }
+                });
+    }
 
         // Salva o novo usuário com endereços
         usuarioRepository.save(novoUsuario);
-        
-        // Envia uma mensagem para a fila SQS após a criação do usuário
-	String queueUrl = "http://localhost:4566/000000000000/usuario/criar"; // URL da fila SQS para criação de usuário
-	String messageBody = "Novo Usuário Criado: IdUsuario: " + novoUsuario.getIdUsuario() + ", Nome: " + novoUsuario.getNome();
-	sqsTemplate.send(queueUrl, messageBody);
 
+        // Envia uma mensagem para a fila SQS após a criação do usuário
+        String queueUrl = "http://localhost:4566/000000000000/usuario"; // URL da fila SQS para criação de usuário
+        String messageBody = "idUsuario: " + novoUsuario.getIdUsuario() + "\n" +
+                "acao: CRIAR";
+        sqsTemplate.send(queueUrl, messageBody);
 
         // Retorna a resposta com os dados do usuário criado
         return new UsuarioResponseDto(novoUsuario.getNome(), novoUsuario.getEmail(), novoUsuario.getImagem());
@@ -127,7 +125,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
     }
 
-      @Override
+    @Override
     public UsuarioTokenResponse getUsuarioForToken(UUID id) {
         return usuarioRepository.findById(id)
                 .map(usuario -> new UsuarioTokenResponse(
@@ -150,7 +148,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new InvalidCredentialsException("invalid.credentials"));
 
         // Mapear Usuario para UsuarioEmailDto
-        return new UsuarioEmailDto(usuario.getIdUsuario(),usuario.getEmail(), usuario.getSenha(), usuario.getRole());
+        return new UsuarioEmailDto(usuario.getIdUsuario(), usuario.getEmail(), usuario.getSenha(), usuario.getRole());
     }
 
     /**
@@ -214,8 +212,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.delete(usuario);
 
         // Envia uma mensagem para a fila SQS
-        String queueUrl = "http://localhost:4566/000000000000/usuario/deletar";
-        String messageBody = "IdUsuario: " + usuario.getIdUsuario();
+        String queueUrl = "http://localhost:4566/000000000000/usuario";
+        String messageBody = "IdUsuario: " + usuario.getIdUsuario() + "\n" +
+                "acao: DELETAR";
+        ;
         sqsTemplate.send(queueUrl, messageBody);
 
         return "user.deleted.success";
