@@ -7,4 +7,5 @@ import cart.api.carrinho.model.Carrinho;
 
 public interface CarrinhoService {
     public Optional<Carrinho> getCarrinhoByIdUsuario(UUID idUsuario, UUID userId);
+    public void processarMensagemSQS(String mensagemSQS);
 }
