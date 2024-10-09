@@ -1,5 +1,10 @@
 package cart.api.carrinho.service;
 
+import org.springframework.stereotype.Component;
+
+import io.awspring.cloud.sqs.annotation.SqsListener;
+
+@Component
 public class CarrinhoSqsListener {
     private final CarrinhoService carrinhoService;
 
@@ -16,7 +21,8 @@ public class CarrinhoSqsListener {
             // Você pode chamar o serviço de conta bancária diretamente ou converter a String para o formato desejado, se necessário
             carrinhoService.processarMensagemSQS(mensagemSQS);
         } catch (Exception e) {
-            // Tratamento de exceção adequado, se necessário
+            System.err.println("Erro ao processar mensagem SQS: " + e.getMessage());
+
             e.printStackTrace();
         }
     }
