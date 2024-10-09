@@ -1,7 +1,6 @@
 package cart.api.carrinho.controller;
 
 import java.util.UUID;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
