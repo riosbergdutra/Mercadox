@@ -82,7 +82,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Optional.ofNullable(usuarioDto.imagem())
                 .filter(imagem -> !imagem.isEmpty())
                 .ifPresent(imagem -> {
-                    String imagemKey = UUID.randomUUID() + ".jpg"; // Gera uma nova imagem com UUID
+                    String imagemKey = novoUsuario.getIdUsuario() + "_" + UUID.randomUUID() + ".jpg"; // Inclui o ID do usuário na chave
                     try {
                         String imagemUrl = s3Service.uploadImagemS3(imagemKey, imagem);
                         novoUsuario.setImagem(imagemUrl);
