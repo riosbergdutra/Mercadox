@@ -9,5 +9,6 @@ import cart.api.carrinho.model.Carrinho;
 
 public interface CarrinhoRepository extends JpaRepository<Carrinho, UUID> {
     Optional<Carrinho> findByIdUsuario(UUID idUsuario);
+    Optional<Carrinho> findByIdCarrinhoAndIdUsuario(UUID idCarrinho, UUID idUsuario);
 
 }
