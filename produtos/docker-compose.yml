@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - kong-net
+      - compose_kong-net
 
  # app:
   #  build:
@@ -32,11 +32,11 @@ services:
    #   SQS_ENDPOINT: http://localstack:4566
    #   S3_ENDPOINT: http://localstack:4566
    # networks:
-   #  - mercadox_network
+   #  - compose_kong-net
 
 volumes:
   postgres_data:
 
 networks:
-  kong-net:
+  compose_kong-net:
     external: true
