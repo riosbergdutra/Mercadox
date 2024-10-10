@@ -6,12 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import cart.api.carrinho.dto.CarrinhoDtoRequest;
 import cart.api.carrinho.model.Carrinho;
 import cart.api.carrinho.service.CarrinhoService;
 
 import org.springframework.security.core.Authentication;
-
+@RestController
+@RequestMapping("/carrinho")
 public class CarrinhoController {
      @Autowired
     private CarrinhoService carrinhoService;
@@ -35,4 +41,21 @@ public class CarrinhoController {
         return ResponseEntity.ok(carrinho);
 
     }
+
+ @PostMapping("/{idCarrinho}/adicionar/{idUsuario}")
+ public ResponseEntity<?> adicionarProdutoAoCarrinho(
+         @PathVariable UUID idUsuario, 
+         @PathVariable UUID idCarrinho, 
+         @RequestBody CarrinhoDtoRequest carrinhoDtoRequest, 
+         Authentication authentication) {
+ 
+     // O userId é obtido da autenticação, ou seja, o usuário logado
+     UUID userId = UUID.fromString(authentication.getName());
+ 
+     // Passa o idUsuario e o userId (ambos podem ser usados para validação)
+     carrinhoService.adicionarProdutoAoCarrinho(carrinhoDtoRequest, idCarrinho, idUsuario, userId);
+ 
+     return ResponseEntity.ok("Produto adicionado ao carrinho com sucesso!");
+ }
+
 }
