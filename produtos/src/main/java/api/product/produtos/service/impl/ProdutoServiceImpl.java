@@ -7,11 +7,13 @@ import java.util.stream.Collectors;
 
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
+import api.product.produtos.dtos.adicionaraocarrinho.AdicionarAoCarrinhoRequestDto;
 import api.product.produtos.dtos.carrinhodto.CarrinhoDtoRequest;
 import api.product.produtos.dtos.produtobyidDto.ProdutoByIdResponse;
 import api.product.produtos.exceptions.FindAllProductsException;
@@ -30,6 +32,9 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Autowired
     private S3Service s3Service;
+    
+    @Autowired RestTemplate restTemplate;
+
 
     @Override
     public ProdutoDtoResponse updateProduto(Long idProduto, ProdutoDtoRequest produtoDtoRequest, UUID userId) {
@@ -191,22 +196,23 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
-    public void adicionarProdutoAoCarrinho(Long idProduto, UUID userId, int quantidade) {
-        // Verifica se o produto existe
-        Produto produto = produtoRepository.findById(idProduto)
-            .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
+public void adicionarProdutoAoCarrinho(AdicionarAoCarrinhoRequestDto requestDto, UUID userId, UUID idCarrinho) {
+    // Verifica se o produto existe
+    Produto produto = produtoRepository.findById(requestDto.idProduto())
+        .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
 
-        // Preparar DTO para o carrinho
-        CarrinhoDtoRequest carrinhoDtoRequest = new CarrinhoDtoRequest();
-        carrinhoDtoRequest.setIdProduto(produto.getIdProduto());
-        carrinhoDtoRequest.setIdVendedor(produto.getIdVendedor());
-        carrinhoDtoRequest.setQuantidade(quantidade);
+    // Preparar DTO para o carrinho
+    CarrinhoDtoRequest carrinhoDtoRequest = new CarrinhoDtoRequest();
+    carrinhoDtoRequest.setIdProduto(produto.getIdProduto());
+    carrinhoDtoRequest.setIdVendedor(produto.getIdVendedor());
+    carrinhoDtoRequest.setQuantidade(requestDto.quantidade());
 
-        // Fazer chamada para a API do carrinho
-        RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8084/carrinho/adicionar"; // URL da API do carrinho
-        restTemplate.postForEntity(url, carrinhoDtoRequest, Void.class);
-    }
+    // Fazer chamada para a API do carrinho
+    String url = String.format("http://localhost:8084/carrinho/%s/adicionar/%s", idCarrinho, userId);
+    
+    restTemplate.postForEntity(url, carrinhoDtoRequest, Void.class);
+}
+
 
     private Produto verificarVendedor(UUID userId, Long idProduto) {
         return produtoRepository.findByIdVendedorAndIdProduto(userId, idProduto)
