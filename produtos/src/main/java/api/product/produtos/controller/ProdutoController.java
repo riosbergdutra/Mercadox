@@ -13,12 +13,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
+import api.product.produtos.dtos.adicionaraocarrinho.AdicionarAoCarrinhoRequestDto;
 import api.product.produtos.dtos.produtobyidDto.ProdutoByIdResponse;
 import api.product.produtos.exceptions.UsuarioNotFoundException;
 import api.product.produtos.service.ProdutoService;
@@ -80,22 +81,28 @@ public class ProdutoController {
         return new ResponseEntity<>(produto, HttpStatus.OK);
     }
 
-    @PostMapping("/{userId}/adicionarAoCarrinho/{idProduto}")
-    public ResponseEntity<Void> adicionarProdutoAoCarrinho(
-            @PathVariable("userId") UUID idUsuario,
-            @PathVariable("idProduto") Long idProduto,
-            @RequestParam int quantidade,
-            Authentication authentication) {
-        UUID userId = getUserIdFromAuthentication(authentication);
+    @PostMapping("/{idCarrinho}/adicionar/{idUsuario}")
+public ResponseEntity<Void> adicionarProdutoAoCarrinho(
+        @PathVariable("idCarrinho") UUID idCarrinho,
+        @PathVariable("idUsuario") UUID idUsuario,
+        @RequestBody AdicionarAoCarrinhoRequestDto requestDto,
+        Authentication authentication) {
+    
+    UUID userId = getUserIdFromAuthentication(authentication);
 
-        if (!idUsuario.equals(userId)) {
-            throw new UsuarioNotFoundException("O ID do usuário na URL não corresponde ao ID no token.");
-        }
-
-        produtoService.adicionarProdutoAoCarrinho(idProduto, userId, quantidade);
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    // Verifica se o ID do usuário na URL corresponde ao ID no token
+    if (!idUsuario.equals(userId)) {
+        throw new UsuarioNotFoundException("O ID do usuário na URL não corresponde ao ID no token.");
     }
+
+    // Chama o serviço para adicionar o produto ao carrinho
+    produtoService.adicionarProdutoAoCarrinho(requestDto, userId, idCarrinho);
+
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+}
+
+    
+    
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
         return UUID.fromString(authentication.getName());
