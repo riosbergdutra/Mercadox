@@ -20,7 +20,7 @@ public class Carrinho {
     @Column(unique = true, nullable = false, name = "id_usuario")
     private UUID idUsuario;
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "item_carrinho", joinColumns = @JoinColumn(name = "id_carrinho"))
     private List<ItemCarrinho> itens;
 }
