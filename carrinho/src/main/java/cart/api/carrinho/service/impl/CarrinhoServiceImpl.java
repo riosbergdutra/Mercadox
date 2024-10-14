@@ -2,6 +2,7 @@ package cart.api.carrinho.service.impl;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,15 +57,15 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     }
 
     @Override
-    public void adicionarProdutoAoCarrinho(CarrinhoDtoRequest carrinhoDtoRequest,UUID idCarrinho, UUID idUsuario, UUID userId) {
+    public void adicionarProdutoAoCarrinho(CarrinhoDtoRequest carrinhoDtoRequest, UUID idCarrinho, UUID idUsuario, UUID userId) {
         // Valida se o carrinho pertence ao usuário autenticado
         Carrinho carrinho = validarCarrinhoUsuario(idCarrinho, userId);
-
+    
         // Verifica se o produto já está no carrinho
         Optional<ItemCarrinho> itemExistente = carrinho.getItens().stream()
                 .filter(item -> item.getIdProduto().equals(carrinhoDtoRequest.idProduto()))
                 .findFirst();
-
+    
         if (itemExistente.isPresent()) {
             // Se o produto já está no carrinho, atualiza a quantidade
             ItemCarrinho item = itemExistente.get();
@@ -74,12 +75,22 @@ public class CarrinhoServiceImpl implements CarrinhoService {
             ItemCarrinho novoItem = new ItemCarrinho();
             novoItem.setIdProduto(carrinhoDtoRequest.idProduto());
             novoItem.setQuantidade(carrinhoDtoRequest.quantidade());
+            novoItem.setPrecoUnitario(carrinhoDtoRequest.precoUnitario()); // Preço unitário
             carrinho.getItens().add(novoItem);
         }
-
+    
+        // Recalcula o valor total do carrinho
+        BigDecimal novoValorTotal = carrinho.getItens().stream()
+            .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade()))) // Multiplica quantidade pelo preço unitário
+            .reduce(BigDecimal.ZERO, BigDecimal::add); // Soma todos os valores usando reduce
+    
+        carrinho.setValorTotal(novoValorTotal); // Atualiza o valor total do carrinho
+    
         // Salva o carrinho atualizado
         carrinhoRepository.save(carrinho);
     }
+    
+
 
     /**
      * Método auxiliar para extrair o idUsuario da mensagem SQS.
@@ -103,7 +114,41 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         }
     }
 
-    private Carrinho validarCarrinhoUsuario(UUID idCarrinho,UUID userId) {
+    @Override
+    public void limparCarrinho(UUID idCarrinho, UUID idUsuario, UUID userId) {
+        // Valida se o carrinho pertence ao usuário autenticado
+        Carrinho carrinho = validarCarrinhoUsuario(idCarrinho, userId);
+
+        // Limpa todos os itens do carrinho
+        carrinho.getItens().clear();
+
+        // Salva o carrinho atualizado (sem itens)
+        carrinhoRepository.save(carrinho);
+    }
+
+    @Override
+public void removerItemDoCarrinho(UUID idCarrinho, UUID idUsuario, Long idProduto, UUID userId) {
+    // Valida se o carrinho pertence ao usuário autenticado
+    Carrinho carrinho = validarCarrinhoUsuario(idCarrinho, userId);
+
+    // Verifica se o produto existe no carrinho
+    Optional<ItemCarrinho> itemExistente = carrinho.getItens().stream()
+            .filter(item -> item.getIdProduto().equals(idProduto))
+            .findFirst();
+
+    if (itemExistente.isPresent()) {
+        // Remove o item do carrinho
+        carrinho.getItens().remove(itemExistente.get());
+
+        // Salva o carrinho atualizado
+        carrinhoRepository.save(carrinho);
+    } else {
+        throw new CarrinhoNotFoundException("Produto não encontrado no carrinho.");
+    }
+}
+
+
+    private Carrinho validarCarrinhoUsuario(UUID idCarrinho, UUID userId) {
         return carrinhoRepository.findByIdCarrinhoAndIdUsuario(idCarrinho, userId)
                 .filter(carrinho -> carrinho.getIdUsuario().equals(userId))
                 .orElseThrow(() -> new CarrinhoNotFoundException(

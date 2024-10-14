@@ -9,4 +9,6 @@ public interface CarrinhoService {
     public Carrinho getCarrinhoByIdUsuario(UUID idUsuario, UUID userId);
     public void processarMensagemSQS(String mensagemSQS);
     public void adicionarProdutoAoCarrinho(CarrinhoDtoRequest carrinhoDtoRequest,UUID idCarrinho, UUID idUsuario, UUID userId);
+    public void limparCarrinho(UUID idCarrinho, UUID idUsuario, UUID userId);
+    public void removerItemDoCarrinho(UUID idCarrinho, UUID idUsuario, Long idProduto, UUID userId);
 }
