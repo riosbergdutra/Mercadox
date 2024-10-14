@@ -1,6 +1,7 @@
 package api.product.produtos.dtos.carrinhodto;
 
 import java.util.UUID;
+import java.math.BigDecimal;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -16,5 +17,8 @@ public class CarrinhoDtoRequest {
     private UUID idVendedor;
 
     @NotNull(message = "Quantidade não pode ser nula")
-    private Integer quantidade;
+    private int quantidade;
+
+    @NotNull(message = "Preço unitário não pode ser nulo")
+    private BigDecimal precoUnitario;
 }

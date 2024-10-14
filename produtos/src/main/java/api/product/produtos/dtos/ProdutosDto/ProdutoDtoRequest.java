@@ -18,7 +18,7 @@ public record ProdutoDtoRequest(@NotBlank(message = "Nome do produto não pode e
                 @NotNull(message = "Descrição do produto não pode estar vazia") String descricao,
                 @NotEmpty(message = "URLs de fotos não podem estar vazias") List<@NotNull(message = "Cada foto deve ser um arquivo válido") MultipartFile> fotos,
                 @NotBlank(message = "Cidade do vendedor não pode estar vazia") String cidadeVendedor,
-                @NotNull(message = "Preço do produto não pode ser nulo") @Positive(message = "Preço do produto deve ser positivo") BigDecimal precoProduto,
+                @NotNull(message = "Preço do produto não pode ser nulo") @Positive(message = "Preço do produto deve ser positivo") BigDecimal preco,
                 @NotNull(message = "Categoria do produto não pode ser nula") CategoriaProduto categoriaProduto,
                 @NotNull(message = "ID do vendedor não pode ser nulo") UUID idVendedor) {
 }
