@@ -42,20 +42,52 @@ public class CarrinhoController {
 
     }
 
- @PostMapping("/{idCarrinho}/adicionar/{idUsuario}")
- public ResponseEntity<?> adicionarProdutoAoCarrinho(
-         @PathVariable UUID idUsuario, 
-         @PathVariable UUID idCarrinho, 
-         @RequestBody CarrinhoDtoRequest carrinhoDtoRequest, 
-         Authentication authentication) {
- 
-     // O userId é obtido da autenticação, ou seja, o usuário logado
-     UUID userId = UUID.fromString(authentication.getName());
- 
-     // Passa o idUsuario e o userId (ambos podem ser usados para validação)
-     carrinhoService.adicionarProdutoAoCarrinho(carrinhoDtoRequest, idCarrinho, idUsuario, userId);
- 
-     return ResponseEntity.ok("Produto adicionado ao carrinho com sucesso!");
- }
+    @PostMapping("/{idCarrinho}/adicionar/{idUsuario}")
+    public ResponseEntity<?> adicionarProdutoAoCarrinho(
+            @PathVariable UUID idUsuario, 
+            @PathVariable UUID idCarrinho, 
+            @RequestBody CarrinhoDtoRequest carrinhoDtoRequest, 
+            Authentication authentication) {
+    
+        // O userId é obtido da autenticação, ou seja, o usuário logado
+        UUID userId = UUID.fromString(authentication.getName());
+    
+        // Passa o idUsuario e o userId (ambos podem ser usados para validação)
+        carrinhoService.adicionarProdutoAoCarrinho(carrinhoDtoRequest, idCarrinho, idUsuario, userId);
+    
+        return ResponseEntity.ok("Produto adicionado ao carrinho com sucesso!");
+    }
+    
+
+ @PostMapping("/{idCarrinho}/limpar/{idUsuario}")
+public ResponseEntity<?> limparCarrinho(
+        @PathVariable UUID idCarrinho, 
+        @PathVariable UUID idUsuario, 
+        Authentication authentication) {
+
+    // O userId é obtido da autenticação, ou seja, o usuário logado
+    UUID userId = UUID.fromString(authentication.getName());
+
+    // Passa os ids para o serviço limpar o carrinho
+    carrinhoService.limparCarrinho(idCarrinho, idUsuario, userId);
+
+    return ResponseEntity.ok("Carrinho esvaziado com sucesso!");
+}
+
+@PostMapping("/{idCarrinho}/remover/{idUsuario}/produto/{idProduto}")
+public ResponseEntity<?> removerItemDoCarrinho(
+        @PathVariable UUID idCarrinho,
+        @PathVariable UUID idUsuario,
+        @PathVariable Long idProduto,
+        Authentication authentication) {
+
+    // O userId é obtido da autenticação, ou seja, o usuário logado
+    UUID userId = UUID.fromString(authentication.getName());
+
+    // Passa os IDs para o serviço remover o item do carrinho
+    carrinhoService.removerItemDoCarrinho(idCarrinho, idUsuario, idProduto, userId);
+
+    return ResponseEntity.ok("Produto removido do carrinho com sucesso!");
+}
 
 }
