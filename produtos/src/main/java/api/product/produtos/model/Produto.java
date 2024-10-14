@@ -24,7 +24,7 @@ public class Produto {
     @Column(unique = true, nullable = false, name = "id_produto")
     private Long idProduto;
 
-    @Column(unique = true, nullable = false, name = "id_vendedor")
+    @Column(unique = false, nullable = false, name = "id_vendedor")
     private UUID idVendedor;
 
     @Column(unique = false, nullable = false, name = "nome_produto")
@@ -35,16 +35,18 @@ public class Produto {
 
     @Column(unique = true, nullable = false, name = "descricao")
     private String descricao;
+
     @Column(unique = true, nullable = false, name = "url_fotos")
     private List<String> urlFotos;
+
     @Column(unique = false, name = "data_criacao")
     private LocalDate dataCriacao = LocalDate.now();
 
     @Column(unique = false, nullable = false, name = "cidade_vendedor")
     private String cidadeVendedor;
 
-    @Column(unique = false, nullable = false, name = "preco_produto")
-    private BigDecimal PrecoProduto;
+    @Column(unique = false, nullable = false, name = "preco")
+    private BigDecimal preco;
 
     @Column(unique = false, nullable = false, name = "categoria_produto")
     private CategoriaProduto categoriaProduto;
