@@ -43,7 +43,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
         produto.setNomeProduto(produtoDtoRequest.nomeProduto());
         produto.setDescricao(produtoDtoRequest.descricao());
-        produto.setPrecoProduto(produtoDtoRequest.precoProduto());
+        produto.setPreco(produtoDtoRequest.preco());
         produto.setCategoriaProduto(produtoDtoRequest.categoriaProduto());
         produto.setCidadeVendedor(produtoDtoRequest.cidadeVendedor());
 
@@ -81,7 +81,7 @@ public class ProdutoServiceImpl implements ProdutoService {
                 produtoAtualizado.getNomeProduto(),
                 produtoAtualizado.getUrlImagem(),
                 produtoAtualizado.getUrlFotos(),
-                produtoAtualizado.getPrecoProduto(),
+                produtoAtualizado.getPreco(),
                 produtoAtualizado.getCategoriaProduto(),
                 produtoAtualizado.getCidadeVendedor());
     }
@@ -116,7 +116,7 @@ public class ProdutoServiceImpl implements ProdutoService {
                             produto.getNomeProduto(),
                             produto.getUrlImagem(),
                             produto.getUrlFotos(),
-                            produto.getPrecoProduto(),
+                            produto.getPreco(),
                             produto.getCategoriaProduto(),
                             produto.getCidadeVendedor()))
                     .collect(Collectors.toList());
@@ -133,7 +133,7 @@ public class ProdutoServiceImpl implements ProdutoService {
                         produto.getNomeProduto(),
                         produto.getUrlImagem(),
                         produto.getDescricao(),
-                        produto.getPrecoProduto(),
+                        produto.getPreco(),
                         produto.getCategoriaProduto(),
                         produto.getCidadeVendedor()))
                 .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
@@ -152,7 +152,7 @@ public class ProdutoServiceImpl implements ProdutoService {
         novoProduto.setNomeProduto(produtoDtoRequest.nomeProduto());
         novoProduto.setDescricao(produtoDtoRequest.descricao());
         novoProduto.setCidadeVendedor(produtoDtoRequest.cidadeVendedor());
-        novoProduto.setPrecoProduto(produtoDtoRequest.precoProduto());
+        novoProduto.setPreco(produtoDtoRequest.preco());
         novoProduto.setCategoriaProduto(produtoDtoRequest.categoriaProduto());
 
         // Manipular a imagem principal
@@ -190,7 +190,7 @@ public class ProdutoServiceImpl implements ProdutoService {
                 produtoSalvo.getNomeProduto(),
                 produtoSalvo.getUrlImagem(),
                 produtoSalvo.getUrlFotos(),
-                produtoSalvo.getPrecoProduto(),
+                produtoSalvo.getPreco(),
                 produtoSalvo.getCategoriaProduto(),
                 produtoSalvo.getCidadeVendedor());
     }
@@ -206,7 +206,7 @@ public void adicionarProdutoAoCarrinho(AdicionarAoCarrinhoRequestDto requestDto,
     carrinhoDtoRequest.setIdProduto(produto.getIdProduto());
     carrinhoDtoRequest.setIdVendedor(produto.getIdVendedor());
     carrinhoDtoRequest.setQuantidade(requestDto.quantidade());
-
+    carrinhoDtoRequest.setPrecoUnitario(produto.getPreco());
     // Fazer chamada para a API do carrinho
     String url = String.format("http://localhost:8084/carrinho/%s/adicionar/%s", idCarrinho, userId);
     
