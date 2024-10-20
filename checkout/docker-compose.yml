@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    container_name: postgres-pedido
+    environment:
+      POSTGRES_DB: pedido
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - compose_kong-net
+
+
+volumes:
+  postgres_data:
+
+networks:
+  compose_kong-net:
+    external: true
