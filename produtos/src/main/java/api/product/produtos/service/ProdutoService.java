@@ -3,7 +3,6 @@ package api.product.produtos.service;
 import java.util.List;
 import java.util.UUID;
 
-
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
 import api.product.produtos.dtos.adicionaraocarrinho.AdicionarAoCarrinhoRequestDto;
@@ -22,4 +21,7 @@ public interface ProdutoService {
      public void deleteProduto(Long idProduto, UUID userId);
 
      public void adicionarProdutoAoCarrinho(AdicionarAoCarrinhoRequestDto requestDto, UUID userId, UUID idCarrinho);
+
+     public boolean verificarEstoqueDisponivel(Long idProduto, int quantidadeSolicitada);
+
 }

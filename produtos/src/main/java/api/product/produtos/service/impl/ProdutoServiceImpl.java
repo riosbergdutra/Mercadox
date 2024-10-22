@@ -32,9 +32,9 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Autowired
     private S3Service s3Service;
-    
-    @Autowired RestTemplate restTemplate;
 
+    @Autowired
+    RestTemplate restTemplate;
 
     @Override
     public ProdutoDtoResponse updateProduto(Long idProduto, ProdutoDtoRequest produtoDtoRequest, UUID userId) {
@@ -90,21 +90,18 @@ public class ProdutoServiceImpl implements ProdutoService {
     public void deleteProduto(Long idProduto, UUID userId) {
         // Verifica se o vendedor tem permissão para excluir o produto
         Produto produto = verificarVendedor(userId, idProduto);
-    
+
         // Excluir a imagem principal e fotos adicionais do S3
         Stream.concat(
-                Stream.ofNullable(produto.getUrlImagem()), 
-                produto.getUrlFotos() != null ? produto.getUrlFotos().stream() : Stream.empty()
-        ).forEach(url -> {
-            String key = url.substring(url.lastIndexOf("/") + 1);
-            s3Service.deleteImagemS3(key);
-        });
-    
+                Stream.ofNullable(produto.getUrlImagem()),
+                produto.getUrlFotos() != null ? produto.getUrlFotos().stream() : Stream.empty()).forEach(url -> {
+                    String key = url.substring(url.lastIndexOf("/") + 1);
+                    s3Service.deleteImagemS3(key);
+                });
+
         // Excluir o produto do banco de dados
         produtoRepository.delete(produto);
     }
-    
-    
 
     @Override
     public List<ProdutoDtoResponse> getAllProdutos() {
@@ -153,6 +150,7 @@ public class ProdutoServiceImpl implements ProdutoService {
         novoProduto.setDescricao(produtoDtoRequest.descricao());
         novoProduto.setCidadeVendedor(produtoDtoRequest.cidadeVendedor());
         novoProduto.setPreco(produtoDtoRequest.preco());
+        novoProduto.setQuantidadeEstoque(produtoDtoRequest.quantidadeEstoque());
         novoProduto.setCategoriaProduto(produtoDtoRequest.categoriaProduto());
 
         // Manipular a imagem principal
@@ -196,23 +194,31 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
-public void adicionarProdutoAoCarrinho(AdicionarAoCarrinhoRequestDto requestDto, UUID userId, UUID idCarrinho) {
-    // Verifica se o produto existe
-    Produto produto = produtoRepository.findById(requestDto.idProduto())
-        .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
+    public void adicionarProdutoAoCarrinho(AdicionarAoCarrinhoRequestDto requestDto, UUID userId, UUID idCarrinho) {
+        // Verifica se o produto existe
+        Produto produto = produtoRepository.findById(requestDto.idProduto())
+                .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
 
-    // Preparar DTO para o carrinho
-    CarrinhoDtoRequest carrinhoDtoRequest = new CarrinhoDtoRequest();
-    carrinhoDtoRequest.setIdProduto(produto.getIdProduto());
-    carrinhoDtoRequest.setIdVendedor(produto.getIdVendedor());
-    carrinhoDtoRequest.setQuantidade(requestDto.quantidade());
-    carrinhoDtoRequest.setPrecoUnitario(produto.getPreco());
-    // Fazer chamada para a API do carrinho
-    String url = String.format("http://localhost:8084/carrinho/%s/adicionar/%s", idCarrinho, userId);
-    
-    restTemplate.postForEntity(url, carrinhoDtoRequest, Void.class);
-}
+        // Preparar DTO para o carrinho
+        CarrinhoDtoRequest carrinhoDtoRequest = new CarrinhoDtoRequest();
+        carrinhoDtoRequest.setIdProduto(produto.getIdProduto());
+        carrinhoDtoRequest.setIdVendedor(produto.getIdVendedor());
+        carrinhoDtoRequest.setQuantidade(requestDto.quantidade());
+        carrinhoDtoRequest.setPrecoUnitario(produto.getPreco());
+        // Fazer chamada para a API do carrinho
+        String url = String.format("http://localhost:8084/carrinho/%s/adicionar/%s", idCarrinho, userId);
 
+        restTemplate.postForEntity(url, carrinhoDtoRequest, Void.class);
+    }
+
+    @Override
+    public boolean verificarEstoqueDisponivel(Long idProduto, int quantidadeSolicitada) {
+        Produto produto = produtoRepository.findById(idProduto)
+                .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
+
+        // Verifica se o estoque disponível é maior ou igual à quantidade solicitada
+        return produto.getQuantidadeEstoque() >= quantidadeSolicitada;
+    }
 
     private Produto verificarVendedor(UUID userId, Long idProduto) {
         return produtoRepository.findByIdVendedorAndIdProduto(userId, idProduto)
