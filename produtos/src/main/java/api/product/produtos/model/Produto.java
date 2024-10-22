@@ -48,6 +48,9 @@ public class Produto {
     @Column(unique = false, nullable = false, name = "preco")
     private BigDecimal preco;
 
+    @Column(nullable = false, name = "quantidade_estoque")
+    private int quantidadeEstoque;
+
     @Column(unique = false, nullable = false, name = "categoria_produto")
     private CategoriaProduto categoriaProduto;
 
