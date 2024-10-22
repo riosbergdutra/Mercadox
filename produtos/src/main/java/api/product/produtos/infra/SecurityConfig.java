@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/avaliacoes/produto/{idProduto}").permitAll() 
                         .requestMatchers(HttpMethod.GET, "/avaliacoes/{idAvaliacao}").permitAll() 
                         .requestMatchers(HttpMethod.GET, "/avaliacoes/media/{idProduto}").permitAll() 
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
