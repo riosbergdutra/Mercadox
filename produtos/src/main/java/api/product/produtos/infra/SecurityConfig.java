@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos/findall").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/produtos/{idProduto}/verificar-estoque/{quantidade}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto").hasAuthority("SCOPE_VENDEDOR")
                         .requestMatchers(HttpMethod.PUT, "/{idVendedor}/atualizarproduto/{idProduto}").hasAuthority("SCOPE_VENDEDOR")
                         .requestMatchers(HttpMethod.DELETE, "/{idVendedor}/deletarproduto/{idProduto}").hasAuthority("SCOPE_VENDEDOR")
