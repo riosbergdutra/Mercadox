@@ -46,6 +46,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/{idUsuario}").hasAuthority("SCOPE_USUARIO")
+                        .requestMatchers(HttpMethod.POST, "/{idCarrinho}/adicionar/{idUsuario}")
+                        .hasAuthority("SCOPE_USUARIO")
+                        .requestMatchers(HttpMethod.POST, "/{idCarrinho}/limpar/{idUsuario}")
+                        .hasAuthority("SCOPE_USUARIO")
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
