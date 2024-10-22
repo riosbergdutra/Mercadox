@@ -81,28 +81,34 @@ public class ProdutoController {
         return new ResponseEntity<>(produto, HttpStatus.OK);
     }
 
-    @PostMapping("/{idCarrinho}/adicionar/{idUsuario}")
-public ResponseEntity<Void> adicionarProdutoAoCarrinho(
-        @PathVariable("idCarrinho") UUID idCarrinho,
-        @PathVariable("idUsuario") UUID idUsuario,
-        @RequestBody AdicionarAoCarrinhoRequestDto requestDto,
-        Authentication authentication) {
-    
-    UUID userId = getUserIdFromAuthentication(authentication);
+    @GetMapping("/{idProduto}/verificar-estoque/{quantidade}")
+    public ResponseEntity<Boolean> verificarEstoqueDisponivel(
+            @PathVariable Long idProduto,
+            @PathVariable int quantidade) {
 
-    // Verifica se o ID do usuário na URL corresponde ao ID no token
-    if (!idUsuario.equals(userId)) {
-        throw new UsuarioNotFoundException("O ID do usuário na URL não corresponde ao ID no token.");
+        boolean temEstoqueSuficiente = produtoService.verificarEstoqueDisponivel(idProduto, quantidade);
+        return ResponseEntity.ok(temEstoqueSuficiente);
     }
 
-    // Chama o serviço para adicionar o produto ao carrinho
-    produtoService.adicionarProdutoAoCarrinho(requestDto, userId, idCarrinho);
+    @PostMapping("/{idCarrinho}/adicionar/{idUsuario}")
+    public ResponseEntity<Void> adicionarProdutoAoCarrinho(
+            @PathVariable("idCarrinho") UUID idCarrinho,
+            @PathVariable("idUsuario") UUID idUsuario,
+            @RequestBody AdicionarAoCarrinhoRequestDto requestDto,
+            Authentication authentication) {
 
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-}
+        UUID userId = getUserIdFromAuthentication(authentication);
 
-    
-    
+        // Verifica se o ID do usuário na URL corresponde ao ID no token
+        if (!idUsuario.equals(userId)) {
+            throw new UsuarioNotFoundException("O ID do usuário na URL não corresponde ao ID no token.");
+        }
+
+        // Chama o serviço para adicionar o produto ao carrinho
+        produtoService.adicionarProdutoAoCarrinho(requestDto, userId, idCarrinho);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
         return UUID.fromString(authentication.getName());
