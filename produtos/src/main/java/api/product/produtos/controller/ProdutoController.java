@@ -21,7 +21,9 @@ import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
 import api.product.produtos.dtos.adicionaraocarrinho.AdicionarAoCarrinhoRequestDto;
 import api.product.produtos.dtos.produtobyidDto.ProdutoByIdResponse;
+import api.product.produtos.dtos.quantidade.QuantidadeRequest;
 import api.product.produtos.exceptions.UsuarioNotFoundException;
+import api.product.produtos.model.Produto;
 import api.product.produtos.service.ProdutoService;
 import jakarta.validation.Valid;
 
@@ -108,6 +110,20 @@ public class ProdutoController {
         produtoService.adicionarProdutoAoCarrinho(requestDto, userId, idCarrinho);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/vendedores/{idVendedor}/produtos/{idProduto}/estoque")
+    public ResponseEntity<Produto> atualizarEstoque(
+            @PathVariable UUID idVendedor,
+            @PathVariable Long idProduto,
+            @RequestBody QuantidadeRequest request,
+            Authentication authentication) {
+                
+        UUID userId = getUserIdFromAuthentication(authentication);
+
+        Produto produtoAtualizado = produtoService.adicionarEstoque(userId, idProduto,
+                request.quantidadeAdicional());
+        return ResponseEntity.ok(produtoAtualizado);
     }
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
