@@ -220,6 +220,20 @@ public class ProdutoServiceImpl implements ProdutoService {
         return produto.getQuantidadeEstoque() >= quantidadeSolicitada;
     }
 
+    public Produto adicionarEstoque(UUID idVendedor, Long idProduto, int quantidadeAdicional) {
+        Produto produto = verificarVendedor(idVendedor, idProduto);
+        
+        if (quantidadeAdicional > 0) {
+            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() + quantidadeAdicional);
+            produtoRepository.save(produto);
+        } else {
+            throw new IllegalArgumentException("Quantidade adicional deve ser maior que zero.");
+        }
+    
+        return produto;
+    }
+    
+
     private Produto verificarVendedor(UUID userId, Long idProduto) {
         return produtoRepository.findByIdVendedorAndIdProduto(userId, idProduto)
                 .orElseThrow(() -> new UsuarioNotFoundException(
