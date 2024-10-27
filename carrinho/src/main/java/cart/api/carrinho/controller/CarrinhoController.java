@@ -36,7 +36,7 @@ public class CarrinhoController {
 
         UUID userId = UUID.fromString(authentication.getName());
 
-        Carrinho carrinho = carrinhoService.getCarrinhoByIdUsuario(idUsuario, userId);
+        Carrinho carrinho = carrinhoService.getCarrinhoByIdUsuario(userId);
 
         return ResponseEntity.ok(carrinho);
 
@@ -53,7 +53,7 @@ public class CarrinhoController {
         UUID userId = UUID.fromString(authentication.getName());
     
         // Passa o idUsuario e o userId (ambos podem ser usados para validação)
-        carrinhoService.adicionarProdutoAoCarrinho(carrinhoDtoRequest, idCarrinho, idUsuario, userId);
+        carrinhoService.adicionarProdutoAoCarrinho(carrinhoDtoRequest, idCarrinho, userId);
     
         return ResponseEntity.ok("Produto adicionado ao carrinho com sucesso!");
     }
@@ -69,7 +69,7 @@ public ResponseEntity<?> limparCarrinho(
     UUID userId = UUID.fromString(authentication.getName());
 
     // Passa os ids para o serviço limpar o carrinho
-    carrinhoService.limparCarrinho(idCarrinho, idUsuario, userId);
+    carrinhoService.limparCarrinho(idCarrinho, userId);
 
     return ResponseEntity.ok("Carrinho esvaziado com sucesso!");
 }
@@ -85,7 +85,7 @@ public ResponseEntity<?> removerItemDoCarrinho(
     UUID userId = UUID.fromString(authentication.getName());
 
     // Passa os IDs para o serviço remover o item do carrinho
-    carrinhoService.removerItemDoCarrinho(idCarrinho, idUsuario, idProduto, userId);
+    carrinhoService.removerItemDoCarrinho(idCarrinho, userId, idProduto);
 
     return ResponseEntity.ok("Produto removido do carrinho com sucesso!");
 }
