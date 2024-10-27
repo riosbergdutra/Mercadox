@@ -7,6 +7,7 @@ import api.product.produtos.dtos.ProdutosDto.ProdutoDtoRequest;
 import api.product.produtos.dtos.ProdutosDto.ProdutoDtoResponse;
 import api.product.produtos.dtos.adicionaraocarrinho.AdicionarAoCarrinhoRequestDto;
 import api.product.produtos.dtos.produtobyidDto.ProdutoByIdResponse;
+import api.product.produtos.model.Produto;
 
 public interface ProdutoService {
 
@@ -23,5 +24,7 @@ public interface ProdutoService {
      public void adicionarProdutoAoCarrinho(AdicionarAoCarrinhoRequestDto requestDto, UUID userId, UUID idCarrinho);
 
      public boolean verificarEstoqueDisponivel(Long idProduto, int quantidadeSolicitada);
+
+     public Produto adicionarEstoque(UUID idVendedor, Long idProduto, int quantidadeAdicional);
 
 }
