@@ -26,7 +26,7 @@ import pedido.api.checkout.enums.FormaPagamento;
 @Data
 public class Pedido {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // ou UUID se suportado
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(unique = true, nullable = false, name = "id_pedido")
     private UUID idPedido;
 

@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Embeddable
@@ -27,7 +26,6 @@ public class Endereco {
     private String cidade;
 
     @NotEmpty(message = "Estado é obrigatório")
-    @Size(min = 2, max = 2, message = "Estado deve ter 2 letras")
     private String estado;
 
     @NotEmpty(message = "CEP é obrigatório")
