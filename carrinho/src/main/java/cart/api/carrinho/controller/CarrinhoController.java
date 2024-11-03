@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cart.api.carrinho.dto.CarrinhoDtoRequest;
+import cart.api.carrinho.dto.CriarPedidoRequestDto;
 import cart.api.carrinho.model.Carrinho;
 import cart.api.carrinho.service.CarrinhoService;
 
@@ -89,5 +90,21 @@ public ResponseEntity<?> removerItemDoCarrinho(
 
     return ResponseEntity.ok("Produto removido do carrinho com sucesso!");
 }
+
+@PostMapping("/{idCarrinho}/finalizar/{idUsuario}")
+    public ResponseEntity<?> finalizarPedido(
+            @PathVariable UUID idCarrinho, 
+            @PathVariable UUID idUsuario, 
+            @RequestBody CriarPedidoRequestDto pedidoRequestDto, 
+            Authentication authentication) {
+
+        // O userId é obtido da autenticação, ou seja, o usuário logado
+        UUID userId = UUID.fromString(authentication.getName());
+
+        // Chama o serviço para finalizar o pedido
+        carrinhoService.finalizarPedido(userId, idCarrinho, pedidoRequestDto);
+
+        return ResponseEntity.ok("Pedido finalizado com sucesso!");
+    }
 
 }
