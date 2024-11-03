@@ -161,7 +161,6 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         carrinho.calcularValorTotal();
 
         var pedidoRequest = new CriarPedidoRequestDto(
-                idUsuario,
                 pedidoRequestDto.enderecoEntrega(),
                 carrinho.getItens(),
                 carrinho.getValorTotal(),
