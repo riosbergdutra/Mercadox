@@ -76,6 +76,13 @@ public class ProdutoController {
         List<ProdutoDtoResponse> produtos = produtoService.getAllProdutos();
         return new ResponseEntity<>(produtos, HttpStatus.OK);
     }
+    
+    @GetMapping("/maiscomprados")
+public ResponseEntity<List<ProdutoDtoResponse>> getTop10ProdutosMaisComprados() {
+    List<ProdutoDtoResponse> produtos = produtoService.getTop10ProdutosMaisComprados();
+    return ResponseEntity.ok(produtos);
+}
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoByIdResponse> getProdutoById(@PathVariable Long id) {
@@ -122,9 +129,19 @@ public class ProdutoController {
         UUID userId = getUserIdFromAuthentication(authentication);
 
         Produto produtoAtualizado = produtoService.adicionarEstoque(userId, idProduto,
-                request.quantidadeAdicional());
+                request.quantidade());
         return ResponseEntity.ok(produtoAtualizado);
     }
+
+    @PostMapping("/{idProduto}/registrar-compra")
+public ResponseEntity<Produto> registrarCompra(
+        @PathVariable Long idProduto,
+        @RequestBody int quantidade) {
+
+    Produto produtoAtualizado = produtoService.registrarCompra(idProduto, quantidade );
+    return ResponseEntity.ok(produtoAtualizado);
+}
+
 
     private UUID getUserIdFromAuthentication(Authentication authentication) {
         return UUID.fromString(authentication.getName());

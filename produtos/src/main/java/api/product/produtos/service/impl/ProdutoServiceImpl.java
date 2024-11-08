@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -83,6 +84,8 @@ public class ProdutoServiceImpl implements ProdutoService {
                 produtoAtualizado.getUrlFotos(),
                 produtoAtualizado.getPreco(),
                 produtoAtualizado.getCategoriaProduto(),
+                produtoAtualizado.getQuantidadeCompra(),
+                produtoAtualizado.getPontuacaoProduto(),
                 produtoAtualizado.getCidadeVendedor());
     }
 
@@ -109,13 +112,15 @@ public class ProdutoServiceImpl implements ProdutoService {
             List<Produto> produtos = produtoRepository.findAll();
             return produtos.stream()
                     .map(produto -> new ProdutoDtoResponse(
-                            produto.getIdProduto(),
-                            produto.getNomeProduto(),
-                            produto.getUrlImagem(),
-                            produto.getUrlFotos(),
-                            produto.getPreco(),
-                            produto.getCategoriaProduto(),
-                            produto.getCidadeVendedor()))
+                        produto.getIdProduto(),
+                        produto.getNomeProduto(),
+                        produto.getUrlImagem(),
+                        produto.getUrlFotos(),
+                        produto.getPreco(),
+                        produto.getCategoriaProduto(),
+                        produto.getQuantidadeCompra(),
+                        produto.getPontuacaoProduto(),
+                        produto.getCidadeVendedor()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new FindAllProductsException("falha ao achar os produtos", e);
@@ -184,13 +189,15 @@ public class ProdutoServiceImpl implements ProdutoService {
         Produto produtoSalvo = produtoRepository.save(novoProduto);
 
         return new ProdutoDtoResponse(
-                produtoSalvo.getIdProduto(),
-                produtoSalvo.getNomeProduto(),
-                produtoSalvo.getUrlImagem(),
-                produtoSalvo.getUrlFotos(),
-                produtoSalvo.getPreco(),
-                produtoSalvo.getCategoriaProduto(),
-                produtoSalvo.getCidadeVendedor());
+            produtoSalvo.getIdProduto(),
+            produtoSalvo.getNomeProduto(),
+            produtoSalvo.getUrlImagem(),
+            produtoSalvo.getUrlFotos(),
+            produtoSalvo.getPreco(),
+            produtoSalvo.getCategoriaProduto(),
+            produtoSalvo.getQuantidadeCompra(),
+            produtoSalvo.getPontuacaoProduto(),
+            produtoSalvo.getCidadeVendedor());
     }
 
     @Override
@@ -222,16 +229,58 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     public Produto adicionarEstoque(UUID idVendedor, Long idProduto, int quantidadeAdicional) {
         Produto produto = verificarVendedor(idVendedor, idProduto);
-        
+
         if (quantidadeAdicional > 0) {
             produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() + quantidadeAdicional);
             produtoRepository.save(produto);
         } else {
             throw new IllegalArgumentException("Quantidade adicional deve ser maior que zero.");
         }
-    
+
         return produto;
     }
+
+    public Produto registrarCompra(Long idProduto, int quantidadeComprada) {
+        Produto produto = produtoRepository.findById(idProduto)
+                .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
+        
+        if (quantidadeComprada > produto.getQuantidadeEstoque()) {
+            throw new IllegalArgumentException("Estoque insuficiente");
+        }
+        
+        // Atualiza o estoque
+        produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - quantidadeComprada);
+        produto.setQuantidadeCompra(produto.getQuantidadeCompra() + quantidadeComprada);
+        
+        return produtoRepository.save(produto);
+    }
+
+    @Override
+public List<ProdutoDtoResponse> getTop10ProdutosMaisComprados() {
+    try{
+    // Consulta os produtos ordenados pela quantidade de compra de forma decrescente (do mais comprado para o menos comprado)
+    List<Produto> topProdutos = produtoRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Order.desc("quantidadeCompra"))))
+            .getContent();
+
+    // Converte a lista de produtos para a resposta DTO
+    return topProdutos.stream()
+            .map(produto -> new ProdutoDtoResponse(
+                produto.getIdProduto(),
+                produto.getNomeProduto(),
+                produto.getUrlImagem(),
+                produto.getUrlFotos(),
+                produto.getPreco(),
+                produto.getCategoriaProduto(),
+                produto.getQuantidadeCompra(),
+                produto.getPontuacaoProduto(),
+                produto.getCidadeVendedor()))
+            .collect(Collectors.toList());
+    
+} catch (Exception e) {
+    throw new FindAllProductsException("falha ao achar os produtos", e);
+}
+            
+}
     
 
     private Produto verificarVendedor(UUID userId, Long idProduto) {
