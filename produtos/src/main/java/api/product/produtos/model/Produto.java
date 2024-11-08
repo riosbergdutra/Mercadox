@@ -54,6 +54,9 @@ public class Produto {
     @Column(unique = false, nullable = false, name = "categoria_produto")
     private CategoriaProduto categoriaProduto;
 
+    @Column(nullable = false, name = "quantidade_compra")
+    private int quantidadeCompra = 0;
+
     @Column(nullable = false, name = "pontuacao_produto")
     private BigDecimal pontuacaoProduto = BigDecimal.ZERO;
 
