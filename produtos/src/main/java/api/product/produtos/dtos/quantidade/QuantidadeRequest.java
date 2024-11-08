@@ -1,4 +1,4 @@
 package api.product.produtos.dtos.quantidade;
 
-public record QuantidadeRequest(int quantidadeAdicional) {
+public record QuantidadeRequest(int quantidade) {
 }

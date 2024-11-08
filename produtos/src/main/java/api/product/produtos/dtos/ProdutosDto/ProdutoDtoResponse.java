@@ -12,6 +12,8 @@ String UrlImagem,
 List<String> UrlFotos,
 BigDecimal PrecoProduto,
 CategoriaProduto categoriaProduto,
+int quantidadeCompra,
+BigDecimal pontuacaoProduto,
 String cidadeVendedor
 )
 {
