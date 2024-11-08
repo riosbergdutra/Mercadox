@@ -25,6 +25,10 @@ public interface ProdutoService {
 
      public boolean verificarEstoqueDisponivel(Long idProduto, int quantidadeSolicitada);
 
-     public Produto adicionarEstoque(UUID idVendedor, Long idProduto, int quantidadeAdicional);
+     public Produto adicionarEstoque(UUID idVendedor, Long idProduto, int quantidade);
+
+    public Produto registrarCompra(Long idProduto, int quantidade);
+    
+    public List<ProdutoDtoResponse> getTop10ProdutosMaisComprados();
 
 }
