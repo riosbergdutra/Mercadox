@@ -38,7 +38,7 @@ Este projeto é uma aplicação de marketplace que permite aos usuários comprar
 ### Pré-requisitos
 
 - **Docker**: Necessário para orquestrar os containers dos microserviços.
-- **Java 17+**: Para execução do backend em Spring Boot.
+- **Java 21+**: Para execução do backend em Spring Boot.
 - **Node.js + Angular CLI**: Para execução e desenvolvimento do frontend.
 - **PostgreSQL**: Banco de dados utilizado na produção.
 
