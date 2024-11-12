@@ -1,0 +1,30 @@
+<header class="header">
+  <div class="container">
+    <img src="logo.png" alt="Logo" class="logo" />
+    
+    <button class="cep-btn" (click)="openModal()">CEP</button>
+    
+    <input type="text" placeholder="Search" class="search-bar" />
+    
+    <!-- Condicional para mostrar 'Minha Conta' ou 'Login' dependendo do estado de autenticação -->
+    <button class="header-button" *ngIf="isAuthenticated" (click)="goToAccount()">Minha Conta</button>
+    <button class="header-button" *ngIf="!isAuthenticated" (click)="goToLogin()">Login</button>
+    
+    <button class="header-button">Pedidos</button>
+    <button class="header-button">Carrinho</button>
+  </div>
+</header>
+
+<!-- Modal para seleção de endereço -->
+<div class="modal" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal()">&times;</span>
+    <h2>Selecione seu endereço</h2>
+    <div class="address-list">
+      <!-- Exemplo de endereços salvos -->
+      <button class="address-button">Endereço 1</button>
+      <button class="address-button">Endereço 2</button>
+      <button class="address-button">Adicionar Novo Endereço</button>
+    </div>
+  </div>
+</div>
