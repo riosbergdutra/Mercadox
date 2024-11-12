@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/produtos/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos/{idProduto}/verificar-estoque/{quantidade}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/produtos/{idVendedor}/criarproduto").hasAuthority("SCOPE_VENDEDOR")
+                        .requestMatchers(HttpMethod.POST, "/produtos/{idProduto}/registrar-compra").hasAuthority("SCOPE_USUARIO")  // Permitindo acesso a esse endpoint para teste
                         .requestMatchers(HttpMethod.PUT, "/{idVendedor}/atualizarproduto/{idProduto}").hasAuthority("SCOPE_VENDEDOR")
                         .requestMatchers(HttpMethod.DELETE, "/{idVendedor}/deletarproduto/{idProduto}").hasAuthority("SCOPE_VENDEDOR")
                         
