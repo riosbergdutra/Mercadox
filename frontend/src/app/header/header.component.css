@@ -1,0 +1,215 @@
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #131921;
+  width: 100%;
+  white-space: nowrap; /* Impede quebras de linha */
+}
+
+.header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  white-space: nowrap; /* Impede quebras de linha */
+}
+
+.logo {
+  width: 100px;
+}
+
+/* Barra de pesquisa */
+.search-bar {
+  flex-grow: 1; /* Permite que a barra de pesquisa ocupe o espaço restante */
+  padding: 5px 10px;
+  margin: 0 10px;
+  max-width: 100%;
+  white-space: nowrap; /* Impede quebras de linha na barra de pesquisa */
+}
+
+/* Botões transparentes com texto e borda em branco */
+.header-button, .cep-btn {
+  padding: 20px 27px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  margin-left: 10px;
+  border: none;
+  white-space: nowrap; /* Impede quebras de linha nos botões */
+}
+
+/* Estilo hover para botões transparentes */
+.header-button:hover, .cep-btn:hover {
+border: 1px solid white;
+}
+
+/* Estilos do modal */
+.modal {
+  display: flex;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  width: 300px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.address-list {
+  margin-top: 20px;
+}
+
+.address-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.address-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Media Query para telas menores */
+@media (max-width: 1200px) {
+  .logo {
+      width: 80px; /* Reduz o tamanho da logo */
+  }
+
+  .header-button, .cep-btn {
+      padding: 15px 20px; /* Reduz o padding dos botões */
+  }
+
+  .search-bar {
+      padding: 5px 8px; /* Reduz o padding da barra de pesquisa */
+  }
+}
+
+@media (max-width: 768px) {
+  .logo {
+      width: 60px; /* Reduz ainda mais a logo */
+  }
+
+  .header-button, .cep-btn {
+      padding: 12px 15px; /* Reduz o padding dos botões */
+  }
+
+  .search-bar {
+      padding: 5px 6px; /* Reduz o padding da barra de pesquisa */
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+      width: 50px; /* Tamanho mínimo da logo */
+  }
+
+  .header-button, .cep-btn {
+      padding: 10px 12px; /* Reduz o padding dos botões */
+  }
+
+  .search-bar {
+      padding: 5px 4px; /* Reduz o padding da barra de pesquisa */
+  }
+
+  .header {
+      flex-direction: column; /* Coloca os itens do header em uma coluna em telas pequenas */
+      align-items: flex-start;
+  }
+
+  .header .container {
+      flex-direction: column; /* Coloca os itens da container em coluna */
+      align-items: flex-start;
+  }
+}
+
+/* Media Query para telas muito pequenas (360px ou 320px) */
+@media (max-width: 360px) {
+  .logo {
+      width: 40px; /* Reduz o tamanho da logo para telas menores */
+  }
+
+  .header-button, .cep-btn {
+      padding: 8px 10px; /* Reduz ainda mais o padding dos botões */
+      font-size: 12px; /* Diminui o tamanho da fonte dos botões */
+  }
+
+  .search-bar {
+      padding: 4px 6px; /* Reduz o padding da barra de pesquisa */
+      font-size: 12px; /* Diminui o tamanho da fonte da barra de pesquisa */
+  }
+
+  .header {
+      flex-direction: column; /* Continua em coluna */
+      align-items: flex-start;
+  }
+
+  .header .container {
+      flex-direction: column; /* Continua em coluna */
+      align-items: flex-start;
+  }
+
+  /* Ajuste na barra de pesquisa para usar o máximo de largura possível */
+  .search-bar {
+      width: 100%; /* Garante que a barra de pesquisa ocupe toda a largura disponível */
+  }
+}
+
+/* Media Query para telas extremamente pequenas (320px ou menos) */
+@media (max-width: 320px) {
+  .logo {
+      width: 35px; /* Ajusta o tamanho da logo para telas muito pequenas */
+  }
+
+  .header-button, .cep-btn {
+      padding: 6px 8px; /* Ajusta o padding dos botões */
+      font-size: 10px; /* Ajusta o tamanho da fonte */
+  }
+
+  .search-bar {
+      padding: 3px 5px; /* Ajusta o padding da barra de pesquisa */
+      font-size: 10px; /* Ajusta o tamanho da fonte */
+  }
+
+  .header {
+      flex-direction: column; /* Continua a coluna */
+      align-items: flex-start;
+  }
+
+  .header .container {
+      flex-direction: column; /* Continua a coluna */
+      align-items: flex-start;
+  }
+
+  /* Garante que a barra de pesquisa ocupe 100% da largura */
+  .search-bar {
+      width: 100%; /* Garante que a barra de pesquisa ocupe toda a largura disponível */
+  }
+}
