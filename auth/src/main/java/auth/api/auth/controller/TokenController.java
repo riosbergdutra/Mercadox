@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import auth.api.auth.dto.LoginRequest;
 import auth.api.auth.dto.LoginResponse;
+import auth.api.auth.dto.UsuarioDto;
 import auth.api.auth.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,30 +48,30 @@ public class TokenController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            jwtService.refreshToken(request, response);
+public ResponseEntity<LoginResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
+    try {
+        // Obtém o refresh token da requisição
+        String refreshToken = getRefreshTokenFromRequest(request);
 
-            // Criar a resposta com o novo access token e refresh token
-            // Opcional: retornar o novo access token e refresh token
-            // Se não precisar enviar nada, pode usar ResponseEntity.ok().build();
-            String newAccessToken = jwtService.generateAccessToken(jwtService.validateUserByRefreshToken(
-                getRefreshTokenFromRequest(request)
-            ));
-            String newRefreshToken = jwtService.generateRefreshToken(jwtService.validateUserByRefreshToken(
-                getRefreshTokenFromRequest(request)
-            ));
+        // Valida o refresh token e obtém o usuário
+        UsuarioDto usuarioDto = jwtService.validateUserByRefreshToken(refreshToken);
 
-            LoginResponse loginResponse = new LoginResponse(
-                newAccessToken,
-                newRefreshToken
-            );
+        // Gera os novos tokens para o usuário
+        String newAccessToken = jwtService.generateAccessToken(usuarioDto);
+        String newRefreshToken = jwtService.generateRefreshToken(usuarioDto);
 
-            return ResponseEntity.ok(loginResponse);
-        } catch (InvalidRefreshTokenException e) {
-            return ResponseEntity.status(401).body(null);
-        }
+        // Retorna a resposta com os novos tokens
+        LoginResponse loginResponse = new LoginResponse(
+            newAccessToken,
+            newRefreshToken
+        );
+
+        return ResponseEntity.ok(loginResponse);
+    } catch (InvalidRefreshTokenException e) {
+        return ResponseEntity.status(401).body(null);
     }
+}
+
 
     private String getRefreshTokenFromRequest(HttpServletRequest request) {
         return Arrays.stream(request.getCookies())

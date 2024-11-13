@@ -110,32 +110,35 @@ public class JwtService {
 
     public UsuarioDto validateUserByRefreshToken(String refreshToken) {
         try {
+            // Decodificando o refresh token
             Jwt decodedJwt = jwtDecoder.decode(refreshToken);
-
-            // Verificar a expiração do token
+    
+            // Verificando se o token está expirado
             if (decodedJwt.getExpiresAt().isBefore(Instant.now())) {
                 throw new InvalidRefreshTokenException("Refresh token is expired");
             }
-
+    
+            // Extraindo o ID do usuário do token
             String userId = decodedJwt.getSubject();
-            // Aqui você pode adicionar lógica para buscar o usuário no banco de dados se
-            // necessário.
+    
+            // Consultando o microserviço de usuários para validar o usuário
             UsuarioDto usuarioDto = findUserById(userId);
-
             if (usuarioDto == null) {
                 throw new InvalidRefreshTokenException("Refresh token is invalid");
             }
-
+    
+            // Retorna o usuário válido
             return usuarioDto;
         } catch (Exception e) {
             throw new InvalidRefreshTokenException("Failed to validate refresh token");
         }
     }
-
+    
     private UsuarioDto findUserById(String userId) {
         String url = String.format("%s/usuario/token/%s", userServiceUrl, userId);
-
+    
         try {
+            // Chamada ao microserviço de usuários para obter os dados do usuário
             ResponseEntity<UsuarioDto> response = restTemplate.getForEntity(url, UsuarioDto.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return response.getBody();
@@ -143,9 +146,11 @@ public class JwtService {
                 return null;
             }
         } catch (HttpClientErrorException e) {
+            // Caso haja erro na chamada ao microserviço, retorna null
             return null;
         }
     }
+    
 
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
