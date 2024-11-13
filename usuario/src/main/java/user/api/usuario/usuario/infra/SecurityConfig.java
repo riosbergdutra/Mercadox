@@ -44,14 +44,23 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/usuario/token/").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                       // Endpoints do actuator e Swagger
+                       .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                       .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                       
+                       // Endpoints do usuário
+                       .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
+                       .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
+                       .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
+                       .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
+                       .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
+                       .requestMatchers(HttpMethod.GET, "/usuario/token/").permitAll()
+
+                       // Endpoints de endereço
+                       .requestMatchers(HttpMethod.POST, "/endereco/{userId}/criar").authenticated()
+                       .requestMatchers(HttpMethod.GET, "/endereco/{userId}/{idEndereco}").authenticated()
+                       .requestMatchers(HttpMethod.PUT, "/endereco/{userId}/{idEndereco}").authenticated()
+                       .requestMatchers(HttpMethod.DELETE, "/endereco/{userId}/{idEndereco}").authenticated()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
