@@ -48,18 +48,18 @@ public class EnderecoController {
      * autenticado.
      * 
      * @param userId         ID do usuário.
-     * @param id             ID do endereço a ser consultado.
+     * @param idEndereco             ID do endereço a ser consultado.
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com o DTO do endereço e status 200 (OK).
      */
-    @GetMapping("/{userId}/{id}")
+    @GetMapping("/{userId}/{idEndereco}")
     public ResponseEntity<EnderecoDto> getEnderecoById(
             @PathVariable UUID userId,
-            @PathVariable UUID id,
+            @PathVariable UUID idEndereco,
             Authentication authentication) {
 
         validarUsuarioAutenticado(userId, authentication);
-        EnderecoDto endereco = enderecoService.getEnderecoById(id, userId)
+        EnderecoDto endereco = enderecoService.getEnderecoById(idEndereco, userId)
                 .orElseThrow(() -> new RuntimeException("Endereco not found or not associated with user"));
         return ResponseEntity.ok(endereco);
     }
@@ -83,15 +83,15 @@ public class EnderecoController {
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com o DTO do endereço atualizado e status 200 (OK).
      */
-    @PutMapping("/{userId}/{id}")
+    @PutMapping("/{userId}/{idEndereco}")
     public ResponseEntity<EnderecoDto> atualizarEndereco(
             @PathVariable UUID userId,
-            @PathVariable UUID id,
+            @PathVariable UUID idEndereco,
             @Valid @RequestBody EnderecoDto enderecoDto,
             Authentication authentication) {
 
         validarUsuarioAutenticado(userId, authentication);
-        EnderecoDto enderecoAtualizado = enderecoService.updateEndereco(id, enderecoDto, userId);
+        EnderecoDto enderecoAtualizado = enderecoService.updateEndereco(idEndereco, enderecoDto, userId);
         return ResponseEntity.ok(enderecoAtualizado);
     }
 
@@ -103,14 +103,14 @@ public class EnderecoController {
      * @param authentication Objeto de autenticação contendo o ID do usuário logado.
      * @return ResponseEntity com uma mensagem de sucesso e status 200 (OK).
      */
-    @DeleteMapping("/{userId}/{id}")
+    @DeleteMapping("/{userId}/{idEndereco}")
     public ResponseEntity<String> excluirEndereco(
             @PathVariable UUID userId,
-            @PathVariable UUID id,
+            @PathVariable UUID idEndereco,
             Authentication authentication) {
 
         validarUsuarioAutenticado(userId, authentication);
-        enderecoService.deleteEndereco(id, userId);
+        enderecoService.deleteEndereco(idEndereco, userId);
         return ResponseEntity.ok("Endereco excluído com sucesso");
     }
 

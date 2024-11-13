@@ -9,11 +9,11 @@ import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
 public interface EnderecoService {
     public EnderecoDto saveEndereco(EnderecoDto enderecoDto, UUID userId);
 
-    public Optional<EnderecoDto> getEnderecoById(UUID id, UUID userId);
+    public Optional<EnderecoDto> getEnderecoById(UUID idEndereco, UUID userId);
 
     List<EnderecoDto> getAllEnderecosByUserId(UUID userId);
 
-    public EnderecoDto updateEndereco(UUID id, EnderecoDto enderecoDto, UUID userId);
+    public EnderecoDto updateEndereco(UUID idEndereco, EnderecoDto enderecoDto, UUID userId);
 
-    public void deleteEndereco(UUID id, UUID userId);
+    public void deleteEndereco(UUID idEndereco, UUID userId);
 }

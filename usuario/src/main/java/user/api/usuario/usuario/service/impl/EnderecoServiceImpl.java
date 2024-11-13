@@ -61,7 +61,7 @@ public class EnderecoServiceImpl implements EnderecoService {
          * Recupera um endereço pelo ID, verificando se pertence ao usuário
          * especificado.
          * 
-         * @param id     O ID do endereço a ser recuperado.
+         * @param idEndereco     O ID do endereço a ser recuperado.
          * @param userId O ID do usuário que deve ser associado ao endereço.
          * @return Um {@link Optional} contendo o DTO do endereço se encontrado e
          *         associado ao usuário, ou vazio se não encontrado.
@@ -69,8 +69,8 @@ public class EnderecoServiceImpl implements EnderecoService {
          *                                   pertencer ao usuário.
          */
         @Override
-        public Optional<EnderecoDto> getEnderecoById(UUID id, UUID userId) {
-                return enderecoRepository.findById(id)
+        public Optional<EnderecoDto> getEnderecoById(UUID idEndereco, UUID userId) {
+                return enderecoRepository.findById(idEndereco)
                                 .filter(endereco -> endereco.getUsuario().getIdUsuario().equals(userId)) // Verifica a
                                                                                                          // associação
                                                                                                          // com o
@@ -111,7 +111,7 @@ public class EnderecoServiceImpl implements EnderecoService {
         /**
          * Atualiza um endereço existente associado ao usuário especificado.
          * 
-         * @param id          O ID do endereço a ser atualizado.
+         * @param idEndereco          O ID do endereço a ser atualizado.
          * @param enderecoDto O DTO contendo os dados atualizados do endereço.
          * @param userId      O ID do usuário ao qual o endereço deve estar associado.
          * @return O DTO do endereço atualizado.
@@ -119,8 +119,8 @@ public class EnderecoServiceImpl implements EnderecoService {
          *                                   pertencer ao usuário.
          */
         @Override
-        public EnderecoDto updateEndereco(UUID id, EnderecoDto enderecoDto, UUID userId) {
-                Endereco endereco = enderecoRepository.findById(id)
+        public EnderecoDto updateEndereco(UUID idEndereco, EnderecoDto enderecoDto, UUID userId) {
+                Endereco endereco = enderecoRepository.findById(idEndereco)
                                 .filter(e -> e.getUsuario().getIdUsuario().equals(userId)) // Verifica a associação com
                                                                                            // o usuário
                                 .orElseThrow(() -> new EnderecoNotFoundException("endereco.not.found"));
@@ -139,14 +139,14 @@ public class EnderecoServiceImpl implements EnderecoService {
         /**
          * Exclui um endereço existente associado ao usuário especificado.
          * 
-         * @param id     O ID do endereço a ser excluído.
+         * @param idEndereco     O ID do endereço a ser excluído.
          * @param userId O ID do usuário ao qual o endereço deve estar associado.
          * @throws EnderecoNotFoundException Se o endereço não for encontrado ou não
          *                                   pertencer ao usuário.
          */
         @Override
-        public void deleteEndereco(UUID id, UUID userId) {
-                Endereco endereco = enderecoRepository.findById(id)
+        public void deleteEndereco(UUID idEndereco, UUID userId) {
+                Endereco endereco = enderecoRepository.findById(idEndereco)
                                 .filter(e -> e.getUsuario().getIdUsuario().equals(userId)) // Verifica a associação com
                                                                                            // o usuário
                                 .orElseThrow(() -> new EnderecoNotFoundException("endereco.not.found"));
