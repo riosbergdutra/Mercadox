@@ -10,9 +10,10 @@
     <button class="header-button" *ngIf="isAuthenticated" (click)="goToAccount()">Minha Conta</button>
     <button class="header-button" *ngIf="!isAuthenticated" (click)="goToLogin()">Login</button>
     
-    <button class="header-button">Pedidos</button>
-    <button class="header-button">Carrinho</button>
-  </div>
+    <button class="header-button" (click)="goToOrders()">Pedidos</button>
+    <button mat-raised-button class="header-button" [matBadge]="cartItemCount" matBadgePosition="above after" matBadgeColor="accent">
+      <mat-icon>shopping_cart</mat-icon>
+    </button>  </div>
 </header>
 
 <!-- Modal para seleção de endereço -->
