@@ -213,3 +213,7 @@ border: 1px solid white;
       width: 100%; /* Garante que a barra de pesquisa ocupe toda a largura disponível */
   }
 }
+/* Estilo para mover o badge para a esquerda */
+.mat-badge-above.mat-badge-after {
+  transform: translateX(-4px);
+}
