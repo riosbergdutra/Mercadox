@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AbstractType, Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { finalize, Observable } from 'rxjs';
 import { LoadingService } from '../loading/loading.service';
+import { jwtDecode } from "jwt-decode";
 
 export interface LoginRequest {
   email: string;
@@ -54,6 +55,29 @@ export class AuthService {
   }
   return false;
 }
+ // Método para obter o token JWT do cookie
+ getToken(): string | null {
+  if (isPlatformBrowser(this.platformId)) {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('accessToken='));
+    return cookie ? cookie.split('=')[1] : null;
+  }
+  return null;
+}
+
+// Método para decodificar o token JWT
+decodeToken(): any {
+  const token = this.getToken();
+  if (token) {
+    try {
+      return jwtDecode(token);  // Chamando corretamente a função jwtDecode
+    } catch (error) {
+      console.error('Erro ao decodificar o token JWT', error);
+      return null;
+    }
+  }
+  return null;
+}
+
 
   register(usuarioRequest: FormData): Observable<void> {
     return this.http.post<void>(`${this.registerUrl}/criar`, usuarioRequest);
