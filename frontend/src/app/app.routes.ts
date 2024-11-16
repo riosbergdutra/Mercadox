@@ -5,12 +5,14 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { authGuard } from './auth/auth.guard';
 import { HomepageComponent } from './homepage/homepage.component';
 import { MinhaContaComponent } from './minha-conta/minha-conta.component';
+import { PedidosComponent } from './pedidos/pedidos.component';
 
 export const routes: Routes = [
     {path:"", component: HomepageComponent},
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     {path:"minha-conta", component: MinhaContaComponent},  
+    {path: "pedidos", component: PedidosComponent},
     { path: '**', component: NotFoundComponent}
 
 ];
