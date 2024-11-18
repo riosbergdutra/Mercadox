@@ -60,6 +60,9 @@ public ResponseEntity<LoginResponse> refresh(HttpServletRequest request, HttpSer
         String newAccessToken = jwtService.generateAccessToken(usuarioDto);
         String newRefreshToken = jwtService.generateRefreshToken(usuarioDto);
 
+        jwtService.setTokensInCookies(response, newAccessToken, newRefreshToken);
+
+
         // Retorna a resposta com os novos tokens
         LoginResponse loginResponse = new LoginResponse(
             newAccessToken,
