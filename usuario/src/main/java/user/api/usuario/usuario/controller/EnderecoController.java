@@ -1,5 +1,6 @@
 package user.api.usuario.usuario.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
+import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.service.EnderecoService;
 
 /**
@@ -25,6 +27,27 @@ public class EnderecoController {
     private EnderecoService enderecoService;
 
     /**
+ * Endpoint para recuperar todos os endereços associados ao usuário autenticado.
+ * 
+ * @param userId         ID do usuário.
+ * @param authentication Objeto de autenticação contendo o ID do usuário logado.
+ * @return ResponseEntity com uma lista de DTOs de endereços e status 200 (OK).
+ */
+@GetMapping("/{userId}")
+public ResponseEntity<List<EnderecoDto>> getAllEnderecosByUser(
+        @PathVariable UUID userId,
+        Authentication authentication) {
+
+    // Valida se o ID do usuário na URL corresponde ao usuário autenticado
+    validarUsuarioAutenticado(userId, authentication);
+
+    // Recupera todos os endereços do usuário
+    List<EnderecoDto> enderecos = enderecoService.getAllEnderecosByUserId(userId);
+
+    // Retorna a lista de endereços com status 200 (OK)
+    return ResponseEntity.ok(enderecos);
+}
+    /**
      * Endpoint para criar um novo endereço para o usuário autenticado.
      * 
      * @param userId         ID do usuário.
@@ -33,13 +56,13 @@ public class EnderecoController {
      * @return ResponseEntity com o DTO do endereço criado e status 201 (CREATED).
      */
     @PostMapping("/{userId}/criar")
-    public ResponseEntity<EnderecoDto> criarEndereco(
+    public ResponseEntity<EnderecoSemId> criarEndereco(
             @PathVariable UUID userId,
-            @Valid @RequestBody EnderecoDto enderecoDto,
+            @Valid @RequestBody EnderecoSemId enderecoDto,
             Authentication authentication) {
 
         validarUsuarioAutenticado(userId, authentication);
-        EnderecoDto resposta = enderecoService.saveEndereco(enderecoDto, userId);
+        EnderecoSemId resposta = enderecoService.saveEndereco(enderecoDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
     }
 
@@ -84,14 +107,14 @@ public class EnderecoController {
      * @return ResponseEntity com o DTO do endereço atualizado e status 200 (OK).
      */
     @PutMapping("/{userId}/{idEndereco}")
-    public ResponseEntity<EnderecoDto> atualizarEndereco(
+    public ResponseEntity<EnderecoSemId> atualizarEndereco(
             @PathVariable UUID userId,
             @PathVariable UUID idEndereco,
-            @Valid @RequestBody EnderecoDto enderecoDto,
+            @Valid @RequestBody EnderecoSemId enderecoDto,
             Authentication authentication) {
 
         validarUsuarioAutenticado(userId, authentication);
-        EnderecoDto enderecoAtualizado = enderecoService.updateEndereco(idEndereco, enderecoDto, userId);
+        EnderecoSemId enderecoAtualizado = enderecoService.updateEndereco(idEndereco, enderecoDto, userId);
         return ResponseEntity.ok(enderecoAtualizado);
     }
 
