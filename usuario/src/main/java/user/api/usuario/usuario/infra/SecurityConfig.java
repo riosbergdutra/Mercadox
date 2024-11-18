@@ -54,13 +54,15 @@ public class SecurityConfig {
                        .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
                        .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
                        .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
-                       .requestMatchers(HttpMethod.GET, "/usuario/token/").permitAll()
+                       .requestMatchers(HttpMethod.GET, "/usuario/token/**").permitAll()
 
                        // Endpoints de endereço
                        .requestMatchers(HttpMethod.POST, "/endereco/{userId}/criar").authenticated()
                        .requestMatchers(HttpMethod.GET, "/endereco/{userId}/{idEndereco}").authenticated()
                        .requestMatchers(HttpMethod.PUT, "/endereco/{userId}/{idEndereco}").authenticated()
                        .requestMatchers(HttpMethod.DELETE, "/endereco/{userId}/{idEndereco}").authenticated()
+                       .requestMatchers(HttpMethod.GET, "/endereco/{userId}").authenticated()
+
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
