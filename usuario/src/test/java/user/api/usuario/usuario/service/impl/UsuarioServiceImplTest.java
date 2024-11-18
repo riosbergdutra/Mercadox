@@ -14,8 +14,8 @@ import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
 import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
-import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
+import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
@@ -73,7 +73,7 @@ public class UsuarioServiceImplTest {
     void saveUsuario_ShouldSaveAndReturnUserResponseDto() throws IOException {
         // Arrange
         MultipartFile imagem = new MockMultipartFile("imagem", "imagem.jpg", "image/jpeg", "imagemConteudo".getBytes());
-        EnderecoDto enderecoDto = new EnderecoDto("Rua 1", "123", "Cidade A", "Estado A", "12345-678");
+        EnderecoSemId enderecoDto = new EnderecoSemId("Rua 1", "123", "Cidade A", "Estado A", "12345-678");
         UsuarioRequestDto usuarioDto = new UsuarioRequestDto("Nome", imagem, "email@example.com", "senha", Role.VENDEDOR, enderecoDto);
 
         Usuario usuario = new Usuario();

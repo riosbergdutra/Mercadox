@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
+import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
 import user.api.usuario.usuario.repository.EnderecoRepository;
@@ -57,7 +58,7 @@ class EnderecoServiceImplTest {
         Usuario usuario = new Usuario();
         usuario.setIdUsuario(userId);
 
-        EnderecoDto enderecoDto = new EnderecoDto("Rua A", "123", "Cidade B", "Estado C", "12345-678");
+        EnderecoSemId enderecoDto = new EnderecoSemId("Rua A", "123", "Cidade B", "Estado C", "12345-678");
         Endereco endereco = new Endereco();
         endereco.setRua(enderecoDto.rua());
         endereco.setNumero(enderecoDto.numero());
@@ -69,7 +70,7 @@ class EnderecoServiceImplTest {
         when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario));
         when(enderecoRepository.save(any(Endereco.class))).thenReturn(endereco);
 
-        EnderecoDto result = enderecoService.saveEndereco(enderecoDto, userId);
+        EnderecoSemId result = enderecoService.saveEndereco(enderecoDto, userId);
         assertEquals(enderecoDto, result);
         verify(enderecoRepository).save(any(Endereco.class));
     }
@@ -101,7 +102,7 @@ class EnderecoServiceImplTest {
 
         Optional<EnderecoDto> result = enderecoService.getEnderecoById(enderecoId, userId);
         assertTrue(result.isPresent());
-        assertEquals(new EnderecoDto("Rua A", "123", "Cidade B", "Estado C", "12345-678"), result.get());
+        assertEquals(new EnderecoDto(enderecoId, "Rua A", "123", "Cidade B", "Estado C", "12345-678"), result.get());
     }
 
     /**
@@ -133,6 +134,7 @@ class EnderecoServiceImplTest {
     void testGetAllEnderecosByUserId_Success() {
         UUID userId = UUID.randomUUID();
         Usuario usuario = new Usuario();
+        UUID idEndereco = UUID.randomUUID();
         usuario.setIdUsuario(userId);
 
         Endereco endereco1 = new Endereco();
@@ -157,8 +159,8 @@ class EnderecoServiceImplTest {
 
         List<EnderecoDto> result = enderecoService.getAllEnderecosByUserId(userId);
         assertEquals(2, result.size());
-        assertTrue(result.contains(new EnderecoDto("Rua A", "123", "Cidade B", "Estado C", "12345-678")));
-        assertTrue(result.contains(new EnderecoDto("Rua D", "456", "Cidade E", "Estado F", "98765-432")));
+        assertTrue(result.contains(new EnderecoDto(idEndereco,"Rua A", "123", "Cidade B", "Estado C", "12345-678")));
+        assertTrue(result.contains(new EnderecoDto(idEndereco,"Rua D", "456", "Cidade E", "Estado F", "98765-432")));
     }
 
     /**
@@ -184,7 +186,7 @@ class EnderecoServiceImplTest {
         endereco.setCep("13579-246");
         endereco.setUsuario(usuario);
 
-        EnderecoDto enderecoDto = new EnderecoDto("Rua Nova", "000", "Cidade Nova", "Estado Novo", "24680-135");
+        EnderecoSemId enderecoDto = new EnderecoSemId( "Rua Nova", "000", "Cidade Nova", "Estado Novo", "24680-135");
         Endereco enderecoAtualizado = new Endereco();
         enderecoAtualizado.setIdEndereco(enderecoId);
         enderecoAtualizado.setRua(enderecoDto.rua());
@@ -197,7 +199,7 @@ class EnderecoServiceImplTest {
         when(enderecoRepository.findById(enderecoId)).thenReturn(Optional.of(endereco));
         when(enderecoRepository.save(any(Endereco.class))).thenReturn(enderecoAtualizado);
 
-        EnderecoDto result = enderecoService.updateEndereco(enderecoId, enderecoDto, userId);
+        EnderecoSemId result = enderecoService.updateEndereco(enderecoId, enderecoDto, userId);
         assertEquals(enderecoDto, result);
     }
 
