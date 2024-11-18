@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
+import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.enums.Role;
 
 public record UsuarioRequestDto(
@@ -17,5 +17,5 @@ public record UsuarioRequestDto(
                 @NotBlank(message = "Email não pode estar vazio") @Email(message = "Email inválido") String email,
                 @NotBlank(message = "Senha não pode estar vazia") String senha,
                 @NotNull(message = "Role não pode estar vazia") Role role,
-                @Valid @NotNull EnderecoDto endereco) {
+                @Valid @NotNull EnderecoSemId endereco) {
 }
