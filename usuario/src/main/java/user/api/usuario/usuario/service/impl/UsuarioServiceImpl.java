@@ -16,8 +16,8 @@ import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioTokenResponse;
 import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
-import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
+import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
@@ -67,7 +67,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     // Configurar e salvar o endereço
     Endereco endereco = new Endereco();
-    EnderecoDto dto = usuarioDto.endereco();
+    EnderecoSemId dto = usuarioDto.endereco();
     endereco.setRua(dto.rua());
     endereco.setNumero(dto.numero());
     endereco.setCidade(dto.cidade());

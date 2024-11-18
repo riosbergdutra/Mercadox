@@ -3,6 +3,7 @@ package user.api.usuario.usuario.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import user.api.usuario.usuario.dtos.EnderecoDto.EnderecoDto;
+import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.exceptions.EnderecoNotFoundException;
 import user.api.usuario.usuario.exceptions.UsuarioNotFoundException;
 import user.api.usuario.usuario.model.Endereco;
@@ -41,7 +42,7 @@ public class EnderecoServiceImpl implements EnderecoService {
          *                                  encontrado.
          */
         @Override
-        public EnderecoDto saveEndereco(EnderecoDto enderecoDto, UUID userId) {
+        public EnderecoSemId saveEndereco(EnderecoSemId enderecoDto, UUID userId) {
                 Usuario usuario = usuarioRepository.findById(userId)
                                 .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
 
@@ -53,7 +54,7 @@ public class EnderecoServiceImpl implements EnderecoService {
                 novoEndereco.setCep(enderecoDto.cep());
                 novoEndereco.setUsuario(usuario); // Associa o endereço ao usuário
                 enderecoRepository.save(novoEndereco);
-                return new EnderecoDto(novoEndereco.getRua(), novoEndereco.getNumero(), novoEndereco.getCidade(),
+                return new EnderecoSemId(novoEndereco.getRua(), novoEndereco.getNumero(), novoEndereco.getCidade(),
                                 novoEndereco.getEstado(), novoEndereco.getCep());
         }
 
@@ -75,7 +76,7 @@ public class EnderecoServiceImpl implements EnderecoService {
                                                                                                          // associação
                                                                                                          // com o
                                                                                                          // usuário
-                                .map(endereco -> new EnderecoDto(endereco.getRua(), endereco.getNumero(),
+                                .map(endereco -> new EnderecoDto(endereco.getIdEndereco(),endereco.getRua(), endereco.getNumero(),
                                                 endereco.getCidade(),
                                                 endereco.getEstado(), endereco.getCep()));
         }
@@ -100,6 +101,7 @@ public class EnderecoServiceImpl implements EnderecoService {
                                                                                                          // usuário
 
                                 .map(endereco -> new EnderecoDto(
+                                        endereco.getIdEndereco(),
                                                 endereco.getRua(),
                                                 endereco.getNumero(),
                                                 endereco.getCidade(),
@@ -119,7 +121,7 @@ public class EnderecoServiceImpl implements EnderecoService {
          *                                   pertencer ao usuário.
          */
         @Override
-        public EnderecoDto updateEndereco(UUID idEndereco, EnderecoDto enderecoDto, UUID userId) {
+        public EnderecoSemId updateEndereco(UUID idEndereco, EnderecoSemId enderecoDto, UUID userId) {
                 Endereco endereco = enderecoRepository.findById(idEndereco)
                                 .filter(e -> e.getUsuario().getIdUsuario().equals(userId)) // Verifica a associação com
                                                                                            // o usuário
@@ -131,7 +133,7 @@ public class EnderecoServiceImpl implements EnderecoService {
                 endereco.setEstado(enderecoDto.estado());
                 endereco.setCep(enderecoDto.cep());
                 Endereco updatedEndereco = enderecoRepository.save(endereco);
-                return new EnderecoDto(updatedEndereco.getRua(), updatedEndereco.getNumero(),
+                return new EnderecoSemId(updatedEndereco.getRua(), updatedEndereco.getNumero(),
                                 updatedEndereco.getCidade(),
                                 updatedEndereco.getEstado(), updatedEndereco.getCep());
         }
