@@ -7,13 +7,18 @@
     <input type="text" placeholder="Search" class="search-bar" />
     
     <!-- Condicional para mostrar 'Minha Conta' ou 'Login' dependendo do estado de autenticação -->
-    <button class="header-button" *ngIf="isAuthenticated" (click)="goToAccount()">Minha Conta</button>
-    <button class="header-button" *ngIf="!isAuthenticated" (click)="goToLogin()">Login</button>
+    <button class="header-button" *ngIf="isAuthenticated$ | async; else showLogin" (click)="goToAccount()">Minha Conta</button>
+    
+    <ng-template #showLogin>
+      <button class="header-button" (click)="goToLogin()">Login</button>
+    </ng-template>
     
     <button class="header-button" (click)="goToOrders()">Pedidos</button>
+    
     <button mat-raised-button class="header-button" [matBadge]="cartItemCount" matBadgePosition="above after" matBadgeColor="accent">
       <mat-icon>shopping_cart</mat-icon>
-    </button>  </div>
+    </button>
+  </div>
 </header>
 
 <!-- Modal para seleção de endereço -->
@@ -22,9 +27,11 @@
     <span class="close" (click)="closeModal()">&times;</span>
     <h2>Selecione seu endereço</h2>
     <div class="address-list">
-      <!-- Exemplo de endereços salvos -->
-      <button class="address-button">Endereço 1</button>
-      <button class="address-button">Endereço 2</button>
+      <!-- Exibe os endereços salvos -->
+      <button *ngFor="let endereco of enderecos" class="address-button">
+        {{ endereco.rua }}, {{ endereco.numero }}, {{ endereco.cidade }} - {{ endereco.estado }}
+      </button>
+      
       <button class="address-button">Adicionar Novo Endereço</button>
     </div>
   </div>
