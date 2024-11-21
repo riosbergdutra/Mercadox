@@ -57,9 +57,6 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, name = "role")
     private Role role;
 
-    @Column(name = "imagem")
-    private String imagem;
-
     @Column(name = "data_conta")
     private LocalDate dataConta;
 

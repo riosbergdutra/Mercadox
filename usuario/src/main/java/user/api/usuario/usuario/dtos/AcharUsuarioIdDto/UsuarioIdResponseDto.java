@@ -6,7 +6,6 @@ public record UsuarioIdResponseDto(
                 String nome,
                 String email,
                 String senha,
-                String imagem,
                 LocalDate dataConta) {
 
 }

@@ -5,23 +5,18 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
 import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
-import user.api.usuario.usuario.dtos.enderecosemid.EnderecoSemId;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
 import user.api.usuario.usuario.repository.EnderecoRepository;
 import user.api.usuario.usuario.repository.UsuarioRepository;
-import user.api.usuario.usuario.service.S3Service;
 import user.api.usuario.usuario.exceptions.UsuarioNotFoundException;
 import user.api.usuario.usuario.exceptions.InvalidCredentialsException;
 
@@ -46,9 +41,6 @@ public class UsuarioServiceImplTest {
     private UsuarioRepository usuarioRepository;
 
     @Mock
-    private S3Service s3Service;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -71,10 +63,7 @@ public class UsuarioServiceImplTest {
      */
     @Test
     void saveUsuario_ShouldSaveAndReturnUserResponseDto() throws IOException {
-        // Arrange
-        MultipartFile imagem = new MockMultipartFile("imagem", "imagem.jpg", "image/jpeg", "imagemConteudo".getBytes());
-        EnderecoSemId enderecoDto = new EnderecoSemId("Rua 1", "123", "Cidade A", "Estado A", "12345-678");
-        UsuarioRequestDto usuarioDto = new UsuarioRequestDto("Nome", imagem, "email@example.com", "senha", Role.VENDEDOR, enderecoDto);
+        UsuarioRequestDto usuarioDto = new UsuarioRequestDto("Nome", "email@example.com", "senha", Role.VENDEDOR);
 
         Usuario usuario = new Usuario();
         usuario.setIdUsuario(UUID.randomUUID());
@@ -88,8 +77,6 @@ public class UsuarioServiceImplTest {
         // Mockando a codificação da senha
         when(passwordEncoder.encode(usuarioDto.senha())).thenReturn("senhaCodificada");
 
-        // Mockando o upload da imagem
-        when(s3Service.uploadImagemS3(anyString(), any())).thenReturn("imagemUrl");
 
         // Mockando o salvamento do usuário
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
@@ -101,7 +88,6 @@ public class UsuarioServiceImplTest {
         assertNotNull(response);
         assertEquals("Nome", response.nome());
         assertEquals("email@example.com", response.email());
-        assertEquals("imagemUrl", response.imagem());
 
         // Verificação se o usuário com o endereço foi salvo corretamente
         verify(usuarioRepository).save(argThat(u -> {
@@ -129,7 +115,6 @@ public class UsuarioServiceImplTest {
         usuario.setNome("Nome");
         usuario.setEmail("email@example.com");
         usuario.setSenha("senha");
-        usuario.setImagem("imagemUrl");
         usuario.setDataConta(LocalDate.now());
 
         when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuario));
@@ -209,14 +194,11 @@ public class UsuarioServiceImplTest {
         UUID userId = id;
         Usuario usuario = new Usuario();
         usuario.setIdUsuario(id);
-        usuario.setImagem("imagemUrl");
         usuario.setEnderecos(List.of(new Endereco()));
 
         when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuario));
         doNothing().when(enderecoRepository).delete(any(Endereco.class));
 
-        // Mockando a exclusão da imagem
-        doNothing().when(s3Service).deleteImagemS3(anyString());
 
         // Act
         String result = usuarioService.deleteUsuario(id, userId);
@@ -225,7 +207,6 @@ public class UsuarioServiceImplTest {
         assertEquals("user.deleted.success", result);
         verify(usuarioRepository).delete(usuario);
         verify(sqsTemplate).send(anyString(), anyString());
-        verify(s3Service).deleteImagemS3("imagemUrl".substring("imagemUrl".lastIndexOf("/") + 1));
         verify(enderecoRepository, times(1)).delete(any(Endereco.class));
     }
 

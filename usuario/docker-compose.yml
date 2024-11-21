@@ -32,7 +32,6 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       SQS_ENDPOINT: http://localstack:4566
-      S3_ENDPOINT: http://localstack:4566
     networks:
       - compose_kong-net
 
