@@ -1,0 +1,20 @@
+<div class="enderecos-container">
+    <div class="endereco-card add-endereco">
+      <span class="add-endereco-text">Adicionar endereço</span>
+    </div>
+  
+    <div *ngFor="let endereco of enderecos" class="endereco-card">
+      <div class="endereco-header">
+        <h3>{{ endereco.nome }}</h3>
+      </div>
+      <p>{{ endereco.rua }}</p>
+      <p>{{ endereco.cidade }}, {{ endereco.estado }}</p>
+      <a href="#" class="instrucao-link">Adicionar instruções de entrega</a>
+      <div class="endereco-footer">
+        <button class="alterar-btn">Alterar</button>
+        <button class="excluir-btn">Excluir</button>
+        <button class="padrao-btn">Definir como padrão</button>
+      </div>
+    </div>
+  </div>
+  
