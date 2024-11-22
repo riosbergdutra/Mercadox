@@ -10,3 +10,15 @@
   }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.link {
+  color: blue; 
+  text-decoration: none;
+  cursor: pointer; 
+   font-size: 0.875rem;
+}
+
+
+.link:hover {
+  text-decoration: underline;
+}
