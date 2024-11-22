@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import user.api.usuario.usuario.dtos.AcharUsuarioIdDto.UsuarioIdResponseDto;
@@ -12,6 +15,7 @@ import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
+import user.api.usuario.usuario.dtos.UserInfoDto.UserInfoDto;
 import user.api.usuario.usuario.enums.Role;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
@@ -100,6 +104,37 @@ public class UsuarioServiceImplTest {
                                                            "12345-678".equals(e.getCep()));
         }));
     }
+
+     // Novo teste para verificar a recuperação do usuário autenticado
+    @Test
+    void getAuthenticatedUser_ShouldReturnAuthenticatedUser() {
+        // Arrange
+        String authenticatedEmail = "email@example.com";
+
+        // Criando um mock para o Authentication
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn(authenticatedEmail);
+        
+        // Criando um mock para o SecurityContext e configurando o comportamento
+        SecurityContext context = mock(SecurityContext.class);
+        when(context.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // Mockando o comportamento do repositório
+        Usuario usuario = new Usuario();
+        usuario.setEmail(authenticatedEmail);
+        usuario.setNome("Nome");
+        when(usuarioRepository.findByEmail(authenticatedEmail)).thenReturn(usuario);
+
+        // Act
+        UserInfoDto usuarioAutenticado = usuarioService.getUserInfo();
+
+        // Assert
+        assertNotNull(usuarioAutenticado);
+        assertEquals("email@example.com", usuarioAutenticado.email());
+        assertEquals("Nome", usuarioAutenticado.nome());
+    }
+
 
     /**
      * Testa a recuperação de um usuário pelo ID.
