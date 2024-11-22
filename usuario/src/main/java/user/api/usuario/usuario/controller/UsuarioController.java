@@ -23,6 +23,7 @@ import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
+import user.api.usuario.usuario.dtos.UserInfoDto.UserInfoDto;
 import user.api.usuario.usuario.service.UsuarioService;
 
 /**
@@ -50,6 +51,19 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
 
     }
+
+    /**
+ * Endpoint para obter informações do usuário autenticado.
+ *
+ * @param authentication Objeto de autenticação contendo o token do usuário logado.
+ * @return ResponseEntity com o DTO do usuário autenticado e status 200 (OK).
+ */
+@GetMapping("/user-info")
+public ResponseEntity<UserInfoDto> getUserInfo() {
+    UserInfoDto userInfo = usuarioService.getUserInfo();
+    return ResponseEntity.ok(userInfo);
+}
+
 
     /**
      * Endpoint para obter detalhes de um usuário por ID.
