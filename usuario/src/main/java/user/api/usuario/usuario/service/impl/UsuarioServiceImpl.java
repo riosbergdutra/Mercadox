@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import user.api.usuario.usuario.dtos.AcharUsuarioPorEmail.UsuarioEmailDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioRequestDto;
 import user.api.usuario.usuario.dtos.CriarUsuarioDto.UsuarioResponseDto;
 import user.api.usuario.usuario.dtos.MudarSenha.MudarSenhaRequest;
+import user.api.usuario.usuario.dtos.UserInfoDto.UserInfoDto;
 import user.api.usuario.usuario.model.Endereco;
 import user.api.usuario.usuario.model.Usuario;
 import user.api.usuario.usuario.repository.EnderecoRepository;
@@ -22,6 +25,7 @@ import user.api.usuario.usuario.repository.UsuarioRepository;
 import user.api.usuario.usuario.service.UsuarioService;
 import user.api.usuario.usuario.exceptions.UsuarioNotFoundException;
 import user.api.usuario.usuario.exceptions.InvalidCredentialsException;
+
 
 /**
  * Implementação do serviço de usuário, responsável por gerenciar operações
@@ -67,6 +71,27 @@ public class UsuarioServiceImpl implements UsuarioService {
         // Retorna a resposta com os dados do usuário criado
         return new UsuarioResponseDto(novoUsuario.getNome(), novoUsuario.getEmail());
     }
+
+
+  @Override
+public UserInfoDto getUserInfo() {
+    // Recupera o ID do usuário autenticado a partir do token
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    UUID userId = UUID.fromString(authentication.getName());
+
+    // Busca o usuário no repositório
+    Usuario usuario = usuarioRepository.findById(userId)
+            .orElseThrow(() -> new UsuarioNotFoundException("user.not.found"));
+
+    // Mapeia os dados do usuário para o DTO UserInfoDto
+    return new UserInfoDto(
+            usuario.getIdUsuario(),
+            usuario.getNome(),
+            usuario.getEmail(),
+            usuario.getRole()
+    );
+}
+
 
     /**
      * Recupera um usuário pelo ID e pelo userId.
@@ -171,4 +196,5 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         return "user.deleted.success";
     }
+
 }
