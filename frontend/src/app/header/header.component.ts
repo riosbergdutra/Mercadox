@@ -6,7 +6,7 @@ import {MatBadgeModule} from '@angular/material/badge';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable, of, take } from 'rxjs';
 import { Endereco } from '../models/Endereco';
-import { EnderecoService } from '../enderecoService/endereco.service';
+import { EnderecoService } from '../services/enderecoService/endereco.service';
 
 
 
@@ -22,10 +22,11 @@ export class HeaderComponent {
   cartItemCount = 0;
   isModalOpen = false;
   enderecos: Endereco[] = [];
-  userId: string = '';  
+  userId$: Observable<string | null>;
   isAuthenticated$: Observable<boolean>;
   constructor(private authService: AuthService,  private router: Router, private enderecoService: EnderecoService) {
     this.isAuthenticated$ = this.authService.isAuthenticated();
+    this.userId$ = this.authService.getUserId()
   }
 
   addToCart() {
@@ -36,28 +37,34 @@ export class HeaderComponent {
     // Verificar se o usuário está autenticado e carregar o ID
     this.isAuthenticated$.subscribe((isAuthenticated) => {
       if (isAuthenticated) {
-        // Busca o ID do usuário do token JWT
-        this.userId = this.authService.getUserId() ?? '';
-        if (this.userId) {
-          this.loadEnderecos();
-        }
+        // Busca o ID do usuário do token JWT e atribui à variável userId$
+        this.userId$ = this.authService.getUserId();
       }
     });
   }
-// Método para carregar os endereços do usuário
-  // Método para carregar os endereços do usuário
   loadEnderecos(): void {
-    if (this.userId) {
-      this.enderecoService.getEnderecos(this.userId).subscribe({
-        next: (enderecos) => {
-          this.enderecos = enderecos;
-        },
-        error: (err) => {
-          console.error('Erro ao carregar endereços', err);
+    this.authService.getUserId().pipe(take(1)).subscribe({
+      next: (userId) => {
+        if (userId) {
+          this.enderecoService.getEnderecos(userId).subscribe({
+            next: (enderecos) => {
+              this.enderecos = enderecos;
+            },
+            error: (err) => {
+              console.error('Erro ao carregar endereços', err);
+            }
+          });
+        } else {
+          console.error('User ID não encontrado.');
         }
-      });
-    }
+      },
+      error: (err) => {
+        console.error('Erro ao obter User ID', err);
+      }
+    });
   }
+  
+
 
 
   openModal() {
