@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { AbstractType, Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { catchError, finalize, Observable, of, switchMap, throwError } from 'rxjs';
 import { LoadingService } from '../loading/loading.service';
-import { jwtDecode } from "jwt-decode";
 
 export interface LoginRequest {
   email: string;
@@ -15,14 +14,6 @@ export interface UsuarioRequestDto {
   email: string;
   senha: string;
   role: string;
-  endereco: {
-    rua: string;
-    numero: string;
-    cidade: string;
-    estado: string;
-    cep: string;
-  };
-  imagem?: File; // Para o upload da imagem, se necessário
 }
 
 @Injectable({
@@ -30,9 +21,30 @@ export interface UsuarioRequestDto {
 })
 export class AuthService {
   private authUrl = 'http://localhost:8081/auth';
-  private registerUrl = 'http://localhost:8000/usuario';
+  private registerUrl = 'http://localhost:8082/usuario';
+  private userUrl = 'http://localhost:8082/usuario/user-info';
+
+  private userInfo: any = null;
+
 
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object, private loadingService: LoadingService) {}
+
+
+   // Método de registro de usuário
+   register(usuarioRequest: UsuarioRequestDto): Observable<void> {
+    console.log('Registrando novo usuário', usuarioRequest);
+    this.loadingService.show(); // Exibe o loading enquanto o registro é processado
+    
+    return this.http.post<void>(`${this.registerUrl}/criar`, usuarioRequest).pipe(
+      finalize(() => {
+        this.loadingService.hide(); // Esconde o loading após a operação
+      }),
+      catchError((error) => {
+        console.error('Erro ao registrar usuário', error);
+        return throwError(() => new Error('Erro ao registrar usuário'));
+      })
+    );
+  }
 
   login(loginRequest: LoginRequest): Observable<void> {
     console.log('Iniciando login com:', loginRequest);
@@ -88,7 +100,25 @@ export class AuthService {
           const refreshedToken = this.getAcessToken();
           if (refreshedToken) {
             console.log('Access token recuperado após refresh:', refreshedToken);
-            return of(true); // Após o refresh, se o token for recuperado com sucesso, o usuário está autenticado
+            // Chama getUserInfo após sucesso do refresh
+            return this.getUserInfo().pipe(
+              switchMap(() => {
+                return this.getUserId().pipe(  // Chama getUserId após obter as informações do usuário
+                  switchMap((userId) => {
+                    if (userId) {
+                      console.log('ID do usuário após refresh:', userId);
+                      return of(true);  // Retorna true se o ID for encontrado
+                    }
+                    console.error('ID do usuário não encontrado');
+                    return of(false);  // Retorna false caso o ID não seja encontrado
+                  })
+                );
+              }),
+              catchError((err) => {
+                console.error('Erro ao buscar informações do usuário após refresh', err);
+                return of(false);
+              })
+            );
           } else {
             console.error('Erro: Access token não encontrado após refresh');
             return of(false); // Se o token não for recuperado após o refresh, o usuário não está autenticado
@@ -101,36 +131,87 @@ export class AuthService {
       );
     }
   
+    // Verifica se o token está presente e tem tempo de expiração no cookie
     if (token) {
-      const decoded = this.decodeToken();
-      if (decoded && decoded.exp) {
-        const now = Math.floor(Date.now() / 1000);
-        if (decoded.exp > now) {
-          return of(true); // Token válido
-        } else {
-          return this.refreshTokenOnExpiry().pipe(
-            switchMap(() => {
-              const refreshedToken = this.getAcessToken();
-              if (refreshedToken) {
-                console.log('Access token recuperado após refresh');
-                return of(true); // Após o refresh, se o token for recuperado com sucesso, o usuário está autenticado
-              } else {
-                console.error('Erro: Access token não encontrado após refresh');
-                return of(false); // Se o token não for recuperado após o refresh, o usuário não está autenticado
-              }
-            }),
-            catchError((err) => {
-              console.error('Erro ao usar refresh token', err);
-              return of(false);
-            })
-          );
-        }
+      const expTime = this.getTokenExpirationTime(token);
+      const now = Math.floor(Date.now() / 1000); // Tempo atual em segundos
+      if (expTime && expTime > now) {
+        console.log('Token ainda válido');
+        // Chama getUserInfo quando o token é válido
+        return this.getUserInfo().pipe(
+          switchMap(() => {
+            return this.getUserId().pipe(  // Chama getUserId após obter as informações do usuário
+              switchMap((userId) => {
+                if (userId) {
+                  console.log('ID do usuário:', userId);
+                  return of(true);  // Retorna true se o ID for encontrado
+                }
+                console.error('ID do usuário não encontrado');
+                return of(false);  // Retorna false caso o ID não seja encontrado
+              })
+            );
+          }),
+          catchError((err) => {
+            console.error('Erro ao buscar informações do usuário', err);
+            return of(false);
+          })
+        );
+      } else {
+        console.log('Token expirado ou sem expiração válida');
+        return this.refreshTokenOnExpiry().pipe(
+          switchMap(() => {
+            const refreshedToken = this.getAcessToken();
+            if (refreshedToken) {
+              console.log('Access token recuperado após refresh');
+              // Chama getUserInfo após sucesso do refresh
+              return this.getUserInfo().pipe(
+                switchMap(() => {
+                  return this.getUserId().pipe(  // Chama getUserId após obter as informações do usuário
+                    switchMap((userId) => {
+                      if (userId) {
+                        console.log('ID do usuário após refresh:', userId);
+                        return of(true);  // Retorna true se o ID for encontrado
+                      }
+                      console.error('ID do usuário não encontrado');
+                      return of(false);  // Retorna false caso o ID não seja encontrado
+                    })
+                  );
+                }),
+                catchError((err) => {
+                  console.error('Erro ao buscar informações do usuário após refresh', err);
+                  return of(false);
+                })
+              );
+            } else {
+              console.error('Erro: Access token não encontrado após refresh');
+              return of(false); // Se o token não for recuperado após o refresh, o usuário não está autenticado
+            }
+          }),
+          catchError((err) => {
+            console.error('Erro ao usar refresh token', err);
+            return of(false);
+          })
+        );
       }
     }
   
     console.log('Token ausente ou inválido');
-    return of(false);
+    return of(false); // Se o token estiver ausente ou inválido
   }
+  
+  
+  // Método que extrai o tempo de expiração do cookie do access token
+  getTokenExpirationTime(token: string): number | null {
+    try {
+      const payload = token.split('.')[1]; // O payload está no segundo segmento do JWT
+      const decoded = JSON.parse(atob(payload)); // Decodifica o base64
+      return decoded.exp ? decoded.exp : null; // Retorna o tempo de expiração se existir
+    } catch (error) {
+      console.error('Erro ao tentar decodificar o token:', error);
+      return null; // Retorna null se o token não for decodificado corretamente
+    }
+  }
+  
   
 
 
@@ -172,42 +253,59 @@ export class AuthService {
     return null;
   }
 
-  decodeToken(): any {
-    console.log('Decodificando token');
+   // Método para pegar as informações do usuário do back-end e armazenar na memória
+   getUserInfo(): Observable<any> {
     const token = this.getAcessToken();
     if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        console.log('Token decodificado:', decoded);
-        return decoded;
-      } catch (error) {
-        console.error('Erro ao decodificar o token JWT', error);
-        return null;
-      }
+      console.log('Buscando informações do usuário');
+      return this.http.get<any>(this.userUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }).pipe(
+        catchError((error) => {
+          console.error('Erro ao buscar informações do usuário', error);
+          return throwError(() => new Error('Erro ao buscar informações do usuário'));
+        }),
+        switchMap((user) => {
+          if (user) {
+            this.userInfo = user;  // Armazena em memória
+            console.log('Informações do usuário recebidas:', this.userInfo);  // Verifique as informações aqui
+            return of(user);
+          }
+          return of(null);
+        })
+      );
     }
-    console.log('Token não encontrado para decodificar');
-    return null;
-  }
-
-  getUserId(): string | null {
-    console.log('Buscando o ID do usuário');
-    const decodedToken = this.decodeToken();
-    if (decodedToken && decodedToken.sub) {
-      console.log('ID do usuário encontrado no token:', decodedToken.sub);
-      return decodedToken.sub; // Ajuste a propriedade para corresponder ao payload do seu JWT
-    }
-    console.log('ID do usuário não encontrado');
-    return null;
+    return throwError(() => new Error('Token de acesso ausente'));
   }
   
 
-  register(usuarioRequest: FormData): Observable<void> {
-    console.log('Registrando novo usuário');
-    return this.http.post<void>(`${this.registerUrl}/criar`, usuarioRequest).pipe(
+  // Método para pegar as informações do usuário armazenadas em memória
+  getStoredUserInfo(): any {
+    return this.userInfo;  // Retorna as informações armazenadas em memória
+  }
+
+  // Método para limpar as informações do usuário da memória
+  clearUserInfo(): void {
+    this.userInfo = null;  // Limpa as informações armazenadas em memória
+  }
+   // Método para obter o ID do usuário
+   getUserId(): Observable<string | null> {
+    return this.getUserInfo().pipe(
+      switchMap((idUsuario) => {
+        if (idUsuario && idUsuario.idUsuario) {
+          console.log('ID do usuário:', idUsuario.idUsuario);
+          return of(idUsuario.idUsuario);
+        }
+        return of(null);
+      }),
       catchError((error) => {
-        console.error('Erro ao registrar usuário', error);
-        return throwError(error);
+        console.error('Erro ao obter ID do usuário', error);
+        return of(null);
       })
     );
   }
-}
+  
+  }
+
