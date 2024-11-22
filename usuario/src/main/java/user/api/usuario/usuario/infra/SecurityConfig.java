@@ -51,6 +51,7 @@ public class SecurityConfig {
                        // Endpoints do usuário
                        .requestMatchers(HttpMethod.POST, "/usuario/criar").permitAll()
                        .requestMatchers(HttpMethod.GET, "/usuario/{id}").authenticated()
+                       .requestMatchers(HttpMethod.GET, "/usuario/user-info").authenticated()
                        .requestMatchers(HttpMethod.GET, "/usuario/email/").permitAll()
                        .requestMatchers(HttpMethod.PUT, "/usuario/senha/{id}").authenticated()
                        .requestMatchers(HttpMethod.DELETE, "/usuario/{id}").authenticated()
