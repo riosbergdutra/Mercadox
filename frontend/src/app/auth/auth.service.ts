@@ -27,6 +27,8 @@ export class AuthService {
 
   private userInfo: any = null; // Armazena os dados do usuário em memória
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
+  private loginFailed = false; 
+  private refreshAttempted = false;
 
   constructor(
     private http: HttpClient,
@@ -56,10 +58,12 @@ export class AuthService {
       .pipe(
         switchMap(() => {
           this.authenticatedSubject.next(true);
+          this.loginFailed = false; // Resetar flag de falha
           return this.getUserInfo();
         }),
         catchError((error) => {
           this.authenticatedSubject.next(false);
+          this.loginFailed = true; // Marcar falha no login
           return throwError(() => new Error('Erro ao realizar login'));
         })
       );
@@ -82,10 +86,13 @@ export class AuthService {
           return throwError(() => error);
         }),
         switchMap(() => {
+          // O novo token de acesso já foi armazenado no cookie pelo backend
+          // Agora, apenas atualizamos o estado de autenticação
           return of(void 0);
         })
       );
   }
+  
 
   logout(): void {
     this.clearUserInfo();
@@ -138,17 +145,33 @@ export class AuthService {
   }
 
   refreshTokenOnExpiry(): Observable<boolean> {
+    // Não tenta renovar o token se o login falhou e já tentamos renovar
+    if (this.refreshAttempted) {
+      return of(false);
+    }
+
     return this.refreshToken().pipe(
       switchMap(() => {
-        this.authenticatedSubject.next(true);
-        return this.validateSession();
+        const accessToken = this.getAcessToken();
+        if (accessToken) {
+          this.authenticatedSubject.next(true);
+          this.refreshAttempted = true; // Marcar como tentado
+          return this.validateSession();
+        } else {
+          this.authenticatedSubject.next(false);
+          return of(false);
+        }
       }),
       catchError(() => {
         this.authenticatedSubject.next(false);
+        this.refreshAttempted = true; // Marcar como tentado
         return of(false);
       })
     );
   }
+
+
+  
 
     /** Valida a sessão do usuário consultando o back-end */
     private validateSession(): Observable<boolean> {
