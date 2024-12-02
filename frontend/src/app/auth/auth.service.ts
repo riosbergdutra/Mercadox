@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, NgZone, PLATFORM_ID } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { UserInfo } from '../interfaces/UserInfo';
 
@@ -27,9 +27,8 @@ export class AuthService {
 
   private userInfo: any = null; // Armazena os dados do usuário em memória
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
-  private loginFailed = false; 
-  private refreshAttempted = false;
-
+  public isRefreshing = false;
+  public refreshTokenSubject = new Subject<boolean>();
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -58,12 +57,10 @@ export class AuthService {
       .pipe(
         switchMap(() => {
           this.authenticatedSubject.next(true);
-          this.loginFailed = false; // Resetar flag de falha
           return this.getUserInfo();
         }),
         catchError((error) => {
           this.authenticatedSubject.next(false);
-          this.loginFailed = true; // Marcar falha no login
           return throwError(() => new Error('Erro ao realizar login'));
         })
       );
@@ -71,7 +68,7 @@ export class AuthService {
 
   register(usuarioRequest: UsuarioRequestDto): Observable<void> {
     return this.http.post<void>(`${this.registerUrl}/criar`, usuarioRequest).pipe(
-      catchError((error) => {
+      catchError(() => {
         return throwError(() => new Error('Erro ao registrar usuário'));
       })
     );
@@ -81,17 +78,17 @@ export class AuthService {
     const refreshToken = this.getRefreshToken();
     return this.http.post<any>(`${this.authUrl}/refresh`, { refreshToken }, { withCredentials: true })
       .pipe(
+        switchMap(() => {
+          this.userInfo = null; // Invalida os dados do usuário, garantindo que sejam atualizados.
+          return of(void 0);
+        }),
         catchError((error) => {
           console.error('Erro ao fazer refresh do token', error);
           return throwError(() => error);
-        }),
-        switchMap(() => {
-          // O novo token de acesso já foi armazenado no cookie pelo backend
-          // Agora, apenas atualizamos o estado de autenticação
-          return of(void 0);
         })
       );
   }
+  
   
 
   logout(): void {
@@ -100,9 +97,15 @@ export class AuthService {
   }
 
   getUserInfo(): Observable<any> {
+    if (this.userInfo != null) {
+      // Se as informações do usuário já estão na memória, retorna imediatamente.
+      return of(this.userInfo);
+    }
+  
+    // Caso contrário, faz a chamada ao backend.
     return this.http.get<any>(this.userUrl).pipe(
       switchMap((user) => {
-        this.userInfo = user;
+        this.userInfo = user; // Armazena na memória
         return of(user);
       }),
       catchError((error) => {
@@ -110,6 +113,7 @@ export class AuthService {
       })
     );
   }
+  
 
   getUserId(): Observable<string | null> {
     return this.getUserInfo().pipe(
@@ -145,30 +149,20 @@ export class AuthService {
   }
 
   refreshTokenOnExpiry(): Observable<boolean> {
-    // Não tenta renovar o token se o login falhou e já tentamos renovar
-    if (this.refreshAttempted) {
-      return of(false);
+    if (this.isRefreshing) {
+      // Aguarda a conclusão da renovação em progresso
+      return this.refreshTokenSubject.asObservable().pipe(
+        switchMap((success) => (success ? of(true) : throwError(() => new Error('Falha ao renovar o token'))))
+      );
     }
 
+    this.isRefreshing = true; // Marca a renovação como em progresso
     return this.refreshToken().pipe(
-      switchMap(() => {
-        const accessToken = this.getAcessToken();
-        if (accessToken) {
-          this.authenticatedSubject.next(true);
-          this.refreshAttempted = true; // Marcar como tentado
-          return this.validateSession();
-        } else {
-          this.authenticatedSubject.next(false);
-          return of(false);
-        }
-      }),
-      catchError(() => {
-        this.authenticatedSubject.next(false);
-        this.refreshAttempted = true; // Marcar como tentado
-        return of(false);
-      })
+      switchMap(() => of(true)), // Retorna sucesso
+      catchError(() => of(false)) // Retorna falha
     );
   }
+
 
 
   
