@@ -150,19 +150,28 @@ export class AuthService {
 
   refreshTokenOnExpiry(): Observable<boolean> {
     if (this.isRefreshing) {
-      // Aguarda a conclusão da renovação em progresso
+      // Aguarda o processo de renovação em andamento
       return this.refreshTokenSubject.asObservable().pipe(
         switchMap((success) => (success ? of(true) : throwError(() => new Error('Falha ao renovar o token'))))
       );
     }
-
-    this.isRefreshing = true; // Marca a renovação como em progresso
+  
+    this.isRefreshing = true;
     return this.refreshToken().pipe(
-      switchMap(() => of(true)), // Retorna sucesso
-      catchError(() => of(false)) // Retorna falha
+      switchMap(() => {
+        this.refreshTokenSubject.next(true); // Informa sucesso
+        return of(true);
+      }),
+      catchError(() => {
+        this.refreshTokenSubject.next(false); // Informa falha
+        return throwError(() => new Error('Erro ao renovar token'));
+      }),
+      finalize(() => {
+        this.isRefreshing = false;
+      })
     );
   }
-
+  
 
 
   
