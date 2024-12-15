@@ -22,7 +22,7 @@
         <option value="VENDEDOR">Vendedor</option>
       </select>
     </div>
-    <button type="submit">Registrar</button>
+    <button type="submit" [disabled]="registerForm.invalid">Registrar</button>
   </form>
 
   <!-- Mostra uma mensagem de erro se o registro falhar -->
